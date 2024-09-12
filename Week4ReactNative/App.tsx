@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useEffect, useState } from "react";
 import {
   StyleSheet,
   Text,
@@ -6,13 +6,14 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
+  Image,
 } from "react-native";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = "http://192.168.2.17:8080"
+const BASE_URL = "http://172.16.20.227:8080"
 
 const Stack = createNativeStackNavigator();
 
@@ -307,9 +308,28 @@ function OtpVerification({ route, navigation }) {
 
       if (response.data && response.data.statusCode === 200) {
         if (response.data.data) {
-          // Check if data is true
-          Alert.alert("Success", "Login successfully!");
-          navigation.navigate("HelloWorld");
+          // Fetch user data
+          const userResponse = await axios.get(
+            `${BASE_URL}/getUserByEmail`,
+            {
+              params: { email: email },
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+              },
+            }
+          );
+
+          if (userResponse.data && userResponse.data.statusCode === 200) {
+            navigation.navigate("HelloWorld", {
+              email: userResponse.data.data.email,
+              accessToken: accessToken,
+              name: userResponse.data.data.name,
+              phone: userResponse.data.data.phone,
+              address: userResponse.data.data.address,
+            });
+          } else {
+            Alert.alert("Error", "Failed to fetch user details.");
+          }
         } else {
           Alert.alert("Error", "Invalid OTP. Please try again.");
         }
@@ -320,14 +340,12 @@ function OtpVerification({ route, navigation }) {
         );
       }
     } catch (error) {
-      // Handle the error
       Alert.alert(
         "Failed to verify OTP",
         error.message || "An unexpected error occurred."
       );
     }
   };
-
   return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Enter OTP</Text>
@@ -349,18 +367,27 @@ function OtpVerification({ route, navigation }) {
     </View>
   );
 }
+function HelloWorld({ route, navigation }) {
+  const { email, name, phone, address, accessToken } = route.params || {};
 
-function HelloWorld({ navigation }) {
   return (
-    <View style={styles.formContainer}>
-      <Text style={styles.title}>Hello World!</Text>
-
-      <TouchableOpacity
-        style={styles.button}
-        onPress={() => navigation.navigate('UpdateProfile')} // Navigate to UpdateProfile
-      >
-        <Text style={styles.buttonText}>Go to Update Profile</Text>
-      </TouchableOpacity>
+    <View style={styles.container}>
+      {/* Profile Header */}
+      <View style={styles.profileHeader}>
+        <Image
+          source={require('./assets/ok.webp')} // Replace with your project's image path
+          style={styles.profileImage}
+        />
+        <View style={styles.profileInfo}>
+          <Text style={styles.name}>{name || "Emma Phillips"}</Text>
+          <Text style={styles.contact}>📞 {phone || "(581)-307-690244"}</Text>
+          <Text style={styles.contact}>📧 {email}</Text>
+          <Text style={styles.contact}>🏠 {address || "Not Provided"}</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("UpdateProfile")}>
+            <Text style={styles.buttonText}>Go to Update Profile</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
     </View>
   );
 }
@@ -403,6 +430,36 @@ export default function App() {
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  profileHeader: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  profileImage: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  profileInfo: {
+    marginLeft: 15,
+    justifyContent: 'center',
+  },
+  name: {
+    fontSize: 20,
+    fontWeight: 'bold',
+  },
+  role: {
+    fontSize: 14,
+    color: 'gray',
+  },
+  contact: {
+    fontSize: 14,
+    color: '#777',
+  },
   formContainer: {
     flex: 1,
     backgroundColor: "#fff",

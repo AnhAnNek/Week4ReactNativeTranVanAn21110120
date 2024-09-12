@@ -37,6 +37,11 @@ public class UserController {
     public List<User> getAllUser() {
         return userService.getAllUser();
     }
+    @GetMapping("/getUserByEmail")
+    public User getUserByEmail(@RequestParam String email) {
+        return userService.getUserByEmail(email);
+    }
+
     @PostMapping("/login1")
     public boolean login(@RequestBody User user) {
         Boolean check = userService.checkUser(user);
