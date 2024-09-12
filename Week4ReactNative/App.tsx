@@ -1,13 +1,95 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import axios from 'axios';
+import React, { useState } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import axios from "axios";
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const BASE_URL = "http://192.168.2.17:8080"
 
 const Stack = createNativeStackNavigator();
+
+const UpdateProfile = ({ navigation }) => {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const handleUpdate = async () => {
+    try {
+      const accessToken = await AsyncStorage.getItem("accessToken");
+
+      const UserProfileUpdate = {
+        email: email,
+        password: password,
+      };
+
+      // Make the API request to update the user profile
+      const response = await axios.put(
+        `${BASE_URL}/login/update-profile`,
+        UserProfileUpdate,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`, // Set access token in headers
+          },
+        }
+      );
+
+      if (response.data && response.data.statusCode === 200) {
+        Alert.alert("Success", "Profile updated successfully.");
+        navigation.navigate("Homepage"); // Redirect to Homepage or other page
+      } else {
+        Alert.alert(
+          "Error",
+          response.data.message || "Failed to update profile. Please try again."
+        );
+      }
+    } catch (error) {
+      Alert.alert(
+        "Failed to update profile",
+        error.message || "An unexpected error occurred."
+      );
+    }
+  };
+
+  return (
+    <View style={styles.formContainer}>
+      <Text style={styles.title}>Update Profile</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        onChangeText={setEmail}
+        keyboardType="email-address"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+        <Text style={styles.buttonText}>Update Profile</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate("Homepage")}>
+        <Text style={styles.linkText}>Cancel</Text>
+      </TouchableOpacity>
+    </View>
+  );
+};
+
 function Login({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
@@ -16,24 +98,38 @@ function Login({ navigation }) {
         password: password,
       };
 
-      const response = await axios.post('http://192.168.2.17:8080/login', UserLogin);
+      const response = await axios.post(
+        `${BASE_URL}/login`,
+        UserLogin
+      );
 
       if (response.data && response.data.statusCode === 200) {
         // Extract accessToken from response
         const { accessToken } = response.data.data;
 
+        await AsyncStorage.setItem('accessToken', accessToken);
+
         // Store the accessToken (e.g., in localStorage, AsyncStorage, or context)
         // Here we'll just log it for demonstration
-        console.log('Access Token:', accessToken);
+        console.log("Access Token:", accessToken);
 
         // Navigate to OTP Verification screen
-        navigation.navigate('OtpVerification', { email: email, accessToken: accessToken });
+        navigation.navigate("OtpVerification", {
+          email: email,
+          accessToken: accessToken,
+        });
       } else {
-        Alert.alert('Error', response.data.message || 'Invalid credentials. Please try again.');
+        Alert.alert(
+          "Error",
+          response.data.message || "Invalid credentials. Please try again."
+        );
       }
     } catch (error) {
       // Handle the error
-      Alert.alert('Failed to login', error.message || 'An unexpected error occurred.');
+      Alert.alert(
+        "Failed to login",
+        error.message || "An unexpected error occurred."
+      );
     }
   };
   return (
@@ -59,11 +155,11 @@ function Login({ navigation }) {
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('Homepage')}>
+      <TouchableOpacity onPress={() => navigation.navigate("Homepage")}>
         <Text style={styles.linkText}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
+      <TouchableOpacity onPress={() => navigation.navigate("ForgetPassword")}>
         <Text style={styles.linkText}>Forget password</Text>
       </TouchableOpacity>
     </View>
@@ -71,8 +167,8 @@ function Login({ navigation }) {
 }
 
 function Homepage({ navigation }) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const handleSignUp = async () => {
     try {
       const User = {
@@ -80,24 +176,29 @@ function Homepage({ navigation }) {
         password: password,
       };
 
-      const response = await axios.post('http://192.168.2.17:8080/register', User);
+      const response = await axios.post(
+        `${BASE_URL}/register`,
+        User
+      );
 
       if (response.status === 200) {
-        Alert.alert('Success', 'Account created successfully!');
-        navigation.navigate('Login');
+        Alert.alert("Success", "Account created successfully!");
+        navigation.navigate("Login");
       } else {
-        Alert.alert('Error', 'Something went wrong. Please try again.');
+        Alert.alert("Error", "Something went wrong. Please try again.");
       }
     } catch (error) {
       // Handle the error
-      Alert.alert('Failed to create account', error.message || 'An unexpected error occurred.');
+      Alert.alert(
+        "Failed to create account",
+        error.message || "An unexpected error occurred."
+      );
     }
   };
   return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Create an account</Text>
       <Text style={styles.subtitle}>Start making your dreams come true</Text>
-
 
       <TextInput
         style={styles.input}
@@ -113,17 +214,16 @@ function Homepage({ navigation }) {
         onChangeText={setPassword}
         secureTextEntry
       />
-      <TextInput
-        style={styles.input}
-        placeholder="Repeat password"
-
-      />
+      <TextInput style={styles.input} placeholder="Repeat password" />
 
       <TouchableOpacity style={styles.button} onPress={handleSignUp}>
         <Text style={styles.buttonText}>Create account</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.googleButton} onPress={() => alert('Sign up with Google')}>
+      <TouchableOpacity
+        style={styles.googleButton}
+        onPress={() => alert("Sign up with Google")}
+      >
         <Text style={styles.googleButtonText}>Sign up with Google</Text>
       </TouchableOpacity>
     </View>
@@ -131,22 +231,29 @@ function Homepage({ navigation }) {
 }
 
 function ForgetPassword({ navigation }) {
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState("");
 
   const handleSendOtp = async () => {
     try {
-      const response = await axios.post('http://192.168.2.17:8080/forgotPassword', null, {
-        params: { email: email }
-      });
+      const response = await axios.post(
+        `${BASE_URL}/forgotPassword`,
+        null,
+        {
+          params: { email: email },
+        }
+      );
 
       if (response.status === 200) {
-        Alert.alert('Success', 'OTP sent to your email.');
-        navigation.navigate('OtpVerification', { email: email });
+        Alert.alert("Success", "OTP sent to your email.");
+        navigation.navigate("OtpVerification", { email: email });
       } else {
-        Alert.alert('Error', 'Failed to send OTP. Please try again.');
+        Alert.alert("Error", "Failed to send OTP. Please try again.");
       }
     } catch (error) {
-      Alert.alert('Failed to send OTP', error.message || 'An unexpected error occurred.');
+      Alert.alert(
+        "Failed to send OTP",
+        error.message || "An unexpected error occurred."
+      );
     }
   };
 
@@ -170,9 +277,8 @@ function ForgetPassword({ navigation }) {
   );
 }
 
-
 function OtpVerification({ route, navigation }) {
-  const [otp, setOtp] = useState('');
+  const [otp, setOtp] = useState("");
   const { email, accessToken } = route.params;
 
   const handleOtpSubmit = async () => {
@@ -182,33 +288,45 @@ function OtpVerification({ route, navigation }) {
         email: email,
       };
 
-      const response = await axios.post('http://192.168.2.17:8080/verifyOTP', OTPLogin, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
+      const response = await axios.post(
+        `${BASE_URL}/verifyOTP`,
+        OTPLogin,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
 
       if (response.data && response.data.statusCode === 200) {
-        if (response.data.data) { // Check if data is true
-          Alert.alert('Success', 'Login successfully!');
-          navigation.navigate('HelloWorld');
+        if (response.data.data) {
+          // Check if data is true
+          Alert.alert("Success", "Login successfully!");
+          navigation.navigate("HelloWorld");
         } else {
-          Alert.alert('Error', 'Invalid OTP. Please try again.');
+          Alert.alert("Error", "Invalid OTP. Please try again.");
         }
       } else {
-        Alert.alert('Error', response.data.message || 'Invalid OTP. Please try again.');
+        Alert.alert(
+          "Error",
+          response.data.message || "Invalid OTP. Please try again."
+        );
       }
     } catch (error) {
       // Handle the error
-      Alert.alert('Failed to verify OTP', error.message || 'An unexpected error occurred.');
+      Alert.alert(
+        "Failed to verify OTP",
+        error.message || "An unexpected error occurred."
+      );
     }
   };
-
 
   return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Enter OTP</Text>
-      <Text style={styles.subtitle}>Please enter the OTP sent to your email</Text>
+      <Text style={styles.subtitle}>
+        Please enter the OTP sent to your email
+      </Text>
 
       <TextInput
         style={styles.input}
@@ -225,10 +343,17 @@ function OtpVerification({ route, navigation }) {
   );
 }
 
-function HelloWorld() {
+function HelloWorld({ navigation }) {
   return (
     <View style={styles.formContainer}>
       <Text style={styles.title}>Hello World!</Text>
+
+      <TouchableOpacity
+        style={styles.button}
+        onPress={() => navigation.navigate('UpdateProfile')} // Navigate to UpdateProfile
+      >
+        <Text style={styles.buttonText}>Go to Update Profile</Text>
+      </TouchableOpacity>
     </View>
   );
 }
@@ -237,14 +362,21 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        <Stack.Screen name="Login" component={Login} options={{ headerShown: false }} />
+        <Stack.Screen
+          name="Login"
+          component={Login}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen
           name="Homepage"
           component={Homepage}
           options={({ navigation }) => ({
-            title: 'Sign Up',
+            title: "Sign Up",
             headerLeft: () => (
-              <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
                 <Text style={styles.backButtonText}>Back</Text>
               </TouchableOpacity>
             ),
@@ -252,70 +384,72 @@ export default function App() {
         />
         <Stack.Screen name="OtpVerification" component={OtpVerification} />
         <Stack.Screen name="HelloWorld" component={HelloWorld} />
-        <Stack.Screen name="ForgetPassword" component={ForgetPassword} options={{ title: 'Forgot Password' }} />
-
+        <Stack.Screen name="UpdateProfile" component={UpdateProfile} />
+        <Stack.Screen
+          name="ForgetPassword"
+          component={ForgetPassword}
+          options={{ title: "Forgot Password" }}
+        />
       </Stack.Navigator>
     </NavigationContainer>
   );
 }
 
-
-
 const styles = StyleSheet.create({
   formContainer: {
     flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
     padding: 20,
   },
   title: {
     fontSize: 24,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 10,
   },
   subtitle: {
     fontSize: 16,
-    color: '#666',
+    color: "#666",
     marginBottom: 20,
   },
   input: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    borderColor: '#ccc',
+    borderColor: "#ccc",
     borderWidth: 1,
     borderRadius: 5,
     paddingHorizontal: 10,
     marginBottom: 15,
   },
   button: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    backgroundColor: '#00aaff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#00aaff",
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 5,
     marginBottom: 10,
   },
   buttonText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
   },
   googleButton: {
-    width: '100%',
+    width: "100%",
     height: 50,
-    borderColor: '#4285F4',
+    borderColor: "#4285F4",
     borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: 5,
   },
   googleButtonText: {
-    color: '#4285F4',
+    color: "#4285F4",
     fontSize: 16,
   },
   linkText: {
-    color: '#00aaff',
+    color: "#00aaff",
     fontSize: 16,
     marginTop: 15,
   },
@@ -323,7 +457,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   backButtonText: {
-    color: '#00aaff',
+    color: "#00aaff",
     fontSize: 16,
   },
 });
