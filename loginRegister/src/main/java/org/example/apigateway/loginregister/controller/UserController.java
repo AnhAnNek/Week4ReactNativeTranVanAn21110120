@@ -64,9 +64,29 @@ public class UserController {
                 new UsernamePasswordAuthenticationToken(user.getEmail(),user.getPassword());
         Authentication authentication = authenticationManagerBuilder.getObject()
                 .authenticate(authenticationToken);
+        otpService.newOTP(user.getEmail());
         String accessToken = securityUtil.createToken(authentication);
         ResponseLogin resLogin = new ResponseLogin();
         resLogin.setAccessToken(accessToken);
         return ResponseEntity.ok().body(resLogin);
     }
+
+    @PostMapping("/update-profile")
+    public String updateProfile(@RequestBody User user) {
+        User userUpdate = userService.getUserByEmail(user.getEmail());
+        userUpdate.setName(user.getName());
+        userUpdate.setPhone(user.getPhone());
+        userUpdate.setAddress(user.getAddress());
+        userService.updateProfile(userUpdate);
+        return "Profile updated successfully";
+    }
+
+    @PostMapping("/update-password")
+    public String updatePassword(@RequestBody User user) {
+        User userUpdate = userService.getUserByEmail(user.getEmail());
+        userUpdate.setName(user.getPassword());
+        userService.updateProfile(userUpdate);
+        return "Password updated successfully";
+    }
+
 }
