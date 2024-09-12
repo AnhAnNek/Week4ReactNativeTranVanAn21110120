@@ -13,23 +13,45 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import axios from "axios";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const BASE_URL = "http://172.16.20.227:8080"
+const BASE_URL = "http://192.168.31.3:8080"
 
 const Stack = createNativeStackNavigator();
 
 const UpdateProfile = ({ navigation }) => {
   const [name, setName] = useState('');
-  const [email, setEmail] = useState(''); // Assuming email is already known
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
 
-  // Fetch email from AsyncStorage (or other method) when component mounts
   useEffect(() => {
-    const fetchEmail = async () => {
-      const storedEmail = await AsyncStorage.getItem('email');
-      setEmail(storedEmail || '');
+    const fetchUserProfile = async () => {
+      try {
+        const accessToken = await AsyncStorage.getItem('accessToken');
+        const storedEmail = await AsyncStorage.getItem('email');
+        console.log(`accessToken: ${accessToken}`)
+        console.log(`storedEmail: ${storedEmail}`)
+
+        const response = await axios.get(`${BASE_URL}/getUserByEmail/${storedEmail}`);
+
+        // Assuming you're fetching all users and the profile is the first one
+        if (response.status === 200 && response.data) {
+          const user = response.data;
+          console.log(`fetch user: ${user}`);
+          if (user) {
+            setName(user.name);
+            setPhone(user.phone);
+            setAddress(user.address);
+          } else {
+            Alert.alert('Error', 'User profile not found.');
+          }
+        } else {
+          Alert.alert('Error', 'Failed to fetch user profile.');
+        }
+      } catch (error) {
+        Alert.alert('Error', 'An unexpected error occurred.');
+      }
     };
-    fetchEmail();
+
+    fetchUserProfile();
   }, []);
 
   const handleUpdateProfile = async () => {
@@ -38,17 +60,16 @@ const UpdateProfile = ({ navigation }) => {
 
       const userProfileUpdate = {
         name: name,
-        email: email, // Include email in the request
         phone: phone,
         address: address,
       };
 
       const response = await axios.post(
-        `${BASE_URL}update-profile`, // Update profile endpoint
+        `${BASE_URL}/update-profile`,
         userProfileUpdate,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`, // Add token in headers if needed
+            Authorization: `Bearer ${accessToken}`,
           },
         }
       );
@@ -116,6 +137,7 @@ function Login({ navigation }) {
         const { accessToken } = response.data.data;
 
         await AsyncStorage.setItem('accessToken', accessToken);
+        await AsyncStorage.setItem('email', email);
 
         // Store the accessToken (e.g., in localStorage, AsyncStorage, or context)
         // Here we'll just log it for demonstration

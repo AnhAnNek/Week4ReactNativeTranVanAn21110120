@@ -42,6 +42,10 @@ public class SecurityConfiguration {
                 .authorizeHttpRequests(
                         authz -> authz
                                 .requestMatchers("/login").permitAll()
+                                .requestMatchers("/register").permitAll()
+                                .requestMatchers("/forgotPassword").permitAll()
+                                .requestMatchers("/getUserByEmail").permitAll()
+                                .requestMatchers("/update-profile").permitAll()
                                 .anyRequest().authenticated())
                 .oauth2ResourceServer((oauth2) -> oauth2.jwt(Customizer.withDefaults()))
 

@@ -93,5 +93,4 @@ public class UserController {
         userService.updateProfile(userUpdate);
         return "Password updated successfully";
     }
-
 }

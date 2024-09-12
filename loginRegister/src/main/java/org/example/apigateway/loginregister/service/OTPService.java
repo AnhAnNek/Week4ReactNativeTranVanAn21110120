@@ -23,6 +23,8 @@ public class OTPService {
         }
         OTP otp = new OTP(email);
         otpRepository.save(otp);
+
+        System.out.println("New OTP: " + otp.getOtp());
     }
 
     public boolean checkOTP(String email, String otp) {
