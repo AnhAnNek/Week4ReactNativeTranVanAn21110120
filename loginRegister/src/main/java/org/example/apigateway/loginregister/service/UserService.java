@@ -33,4 +33,8 @@ public class UserService {
         }
         return true;
     }
+
+    public void updateProfile(User user) {
+        userRepository.save(user);
+    }
 }
