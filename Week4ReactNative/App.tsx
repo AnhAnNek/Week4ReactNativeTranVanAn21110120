@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, {useEffect, useState} from "react";
 import {
   StyleSheet,
   Text,
@@ -17,43 +17,49 @@ const BASE_URL = "http://192.168.2.17:8080"
 const Stack = createNativeStackNavigator();
 
 const UpdateProfile = ({ navigation }) => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState(''); // Assuming email is already known
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
 
-  const handleUpdate = async () => {
+  // Fetch email from AsyncStorage (or other method) when component mounts
+  useEffect(() => {
+    const fetchEmail = async () => {
+      const storedEmail = await AsyncStorage.getItem('email');
+      setEmail(storedEmail || '');
+    };
+    fetchEmail();
+  }, []);
+
+  const handleUpdateProfile = async () => {
     try {
-      const accessToken = await AsyncStorage.getItem("accessToken");
+      const accessToken = await AsyncStorage.getItem('accessToken'); // Get the stored access token
 
-      const UserProfileUpdate = {
-        email: email,
-        password: password,
+      const userProfileUpdate = {
+        name: name,
+        email: email, // Include email in the request
+        phone: phone,
+        address: address,
       };
 
-      // Make the API request to update the user profile
-      const response = await axios.put(
-        `${BASE_URL}/login/update-profile`,
-        UserProfileUpdate,
+      const response = await axios.post(
+        `${BASE_URL}update-profile`, // Update profile endpoint
+        userProfileUpdate,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`, // Set access token in headers
+            Authorization: `Bearer ${accessToken}`, // Add token in headers if needed
           },
         }
       );
 
-      if (response.data && response.data.statusCode === 200) {
-        Alert.alert("Success", "Profile updated successfully.");
-        navigation.navigate("Homepage"); // Redirect to Homepage or other page
+      if (response.data && response.status === 200) {
+        Alert.alert('Success', response.data || 'Profile updated successfully.');
+        navigation.navigate('Homepage'); // Redirect after successful update
       } else {
-        Alert.alert(
-          "Error",
-          response.data.message || "Failed to update profile. Please try again."
-        );
+        Alert.alert('Error', response.data.message || 'Failed to update profile.');
       }
     } catch (error) {
-      Alert.alert(
-        "Failed to update profile",
-        error.message || "An unexpected error occurred."
-      );
+      Alert.alert('Failed to update profile', error.message || 'An unexpected error occurred.');
     }
   };
 
@@ -63,25 +69,26 @@ const UpdateProfile = ({ navigation }) => {
 
       <TextInput
         style={styles.input}
-        placeholder="Email"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
+        placeholder="Name"
+        value={name}
+        onChangeText={setName}
       />
       <TextInput
         style={styles.input}
-        placeholder="Password"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
+        placeholder="Phone"
+        value={phone}
+        onChangeText={setPhone}
+        keyboardType="phone-pad"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Address"
+        value={address}
+        onChangeText={setAddress}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleUpdate}>
+      <TouchableOpacity style={styles.button} onPress={handleUpdateProfile}>
         <Text style={styles.buttonText}>Update Profile</Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity onPress={() => navigation.navigate("Homepage")}>
-        <Text style={styles.linkText}>Cancel</Text>
       </TouchableOpacity>
     </View>
   );
