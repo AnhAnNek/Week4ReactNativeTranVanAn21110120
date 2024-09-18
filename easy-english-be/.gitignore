@@ -1,0 +1,44 @@
+# Spring Boot
+/target/
+/build/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Logs
+logs/
+log/
+*.log
+
+# Compiled class file
+*.class
+
+# Maven
+mvnw
+mvnw.cmd
+.mvn/
+
+# Gradle
+.gradle/
+build/
+
+# Eclipse
+.classpath
+.project
+.settings/
+
+# IntelliJ
+*.iws
+*.iml
+*.ipr
+
+# Visual Studio Code
+.vscode/
+mylog.log.*.gz
+
+*.plantuml
+
+**/.env

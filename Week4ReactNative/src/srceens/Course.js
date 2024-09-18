@@ -3,8 +3,7 @@ import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, A
 import axios from 'axios';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { getToken } from '../utils/authUtils';
-
-const API_URL = 'http://192.168.2.4:8001'; // Thay thế bằng URL API của bạn
+import {BASE_URL} from "../utils/constants";
 
 const CourseScreen = ({ navigation }) => {
   const [courses, setCourses] = useState([]);
@@ -19,7 +18,7 @@ const CourseScreen = ({ navigation }) => {
       const tokenStr = await getToken();
 
       // Gọi API để lấy tất cả các khóa học
-      const response = await axios.get(`${API_URL}/courses`, {
+      const response = await axios.get(`${BASE_URL}/courses`, {
         headers: {
           Authorization: `Bearer ${tokenStr}`, // Gửi token trong header
         },
@@ -40,7 +39,7 @@ const CourseScreen = ({ navigation }) => {
       const tokenStr = await getToken();
 
       // Gọi API để lọc khóa học dựa trên giá và tên
-      const response = await axios.get(`${API_URL}/courses/filter`, {
+      const response = await axios.get(`${BASE_URL}/courses/filter`, {
         headers: {
           Authorization: `Bearer ${tokenStr}`, // Gửi token trong header
         },
