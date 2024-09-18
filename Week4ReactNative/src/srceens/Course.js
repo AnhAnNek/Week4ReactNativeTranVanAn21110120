@@ -44,7 +44,7 @@ const CourseScreen = ({ navigation }) => {
           Authorization: `Bearer ${tokenStr}`, // Gửi token trong header
         },
         params: {
-          price: price !== '' ? parseInt(price, 10) : undefined, // Dynamic price from input
+          price: price !== '' ? parseInt(price, 10) : 0, // Dynamic price from input
           name: searchQuery, // Truyền tên khóa học từ input tìm kiếm
         },
       });
