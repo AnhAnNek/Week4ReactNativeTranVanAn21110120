@@ -1,30 +1,45 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, FlatList, Image, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
-import axios from 'axios';
+import {
+  View,
+  Text,
+  TextInput,
+  FlatList,
+  Image,
+  StyleSheet,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl
+} from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { getToken } from '../utils/authUtils';
+import { get } from '../utils/httpRequest'
 import {BASE_URL} from "../utils/constants";
 
 const CourseScreen = ({ navigation }) => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [price, setPrice] = useState(0); // State to store the price filter
+  const [price, setPrice] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [pageNumber, setPageNumber] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  // Gọi API để lấy danh sách khóa học
-  const fetchCourses = async () => {
+  const fetchCourses = async (pageNumber = 1) => {
+    if (!hasMore) return;
+
     try {
       setLoading(true);
-      const tokenStr = await getToken();
-
-      // Gọi API để lấy tất cả các khóa học
-      const response = await axios.get(`${BASE_URL}/courses`, {
-        headers: {
-          Authorization: `Bearer ${tokenStr}`, // Gửi token trong header
+      const response = await get(`${BASE_URL}/courses`, {
+        params: {
+          price: price !== '' ? parseInt(price, 10) : 0,
+          name: searchQuery,
+          pageNumber: pageNumber,
+          size: 8
         },
       });
 
-      setCourses(response.data); // Lưu danh sách khóa học vào state
+      const newCourses = response.data;
+
+      setCourses((prevCourses) => [...prevCourses, ...newCourses]);
+      setHasMore(newCourses.length === 10);
       setLoading(false);
     } catch (error) {
       console.error('Error fetching courses:', error);
@@ -33,19 +48,15 @@ const CourseScreen = ({ navigation }) => {
   };
 
   // Gọi API để lọc các khóa học theo giá và tên
-  const filterCourses = async () => {
+  const filterCourses = async (pageNumber = 1) => {
     try {
       setLoading(true);
-      const tokenStr = await getToken();
-
-      // Gọi API để lọc khóa học dựa trên giá và tên
-      const response = await axios.get(`${BASE_URL}/courses/filter`, {
-        headers: {
-          Authorization: `Bearer ${tokenStr}`, // Gửi token trong header
-        },
+      const response = await get(`${BASE_URL}/courses/filter`, {
         params: {
           price: price !== '' ? parseInt(price, 10) : 0, // Dynamic price from input
           name: searchQuery, // Truyền tên khóa học từ input tìm kiếm
+          pageNumber: pageNumber,
+          size: 10
         },
       });
 
@@ -58,11 +69,22 @@ const CourseScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
-    fetchCourses(); // Lấy danh sách khóa học khi component được mount
-  }, []);
+    fetchCourses(pageNumber);
+  }, [pageNumber]);
 
   const goToCourseDetail = (course) => {
     navigation.navigate('CourseDetail', { course });
+  };
+
+  const loadMoreCourses = () => {
+    console.log(`loadMoreCourses() method`)
+    setPageNumber((prevPageNumber) => prevPageNumber + 1);
+  };
+
+  const refreshList = () => {
+    setLoading(true);
+    setPageNumber(1);
+    fetchCourses(1);
   };
 
   const renderCourseItem = ({ item }) => (
@@ -119,6 +141,12 @@ const CourseScreen = ({ navigation }) => {
         renderItem={renderCourseItem}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.courseList}
+        onEndReached={loadMoreCourses} // Load more when the user reaches the end
+        onEndReachedThreshold={0.5} // Trigger loadMoreCourses when 50% of the list is visible
+        ListFooterComponent={hasMore && <ActivityIndicator size="small" color="#000" />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refreshList} />
+        }
       />
     </View>
   );
