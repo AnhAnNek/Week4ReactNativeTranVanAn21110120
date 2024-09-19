@@ -9,7 +9,7 @@ import {
   TextInput,
 } from 'react-native-paper';
 import {API_URL} from '../utils/constants';
-import {getToken} from '../utils/authUtils';
+import {getToken, removeToken} from '../utils/authUtils';
 import {get, post} from '../utils/httpRequest';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import {Picker} from '@react-native-picker/picker';
@@ -86,6 +86,11 @@ function UpdateProfile({navigation}) {
     }
   };
 
+  const logout = () => {
+    removeToken();
+    navigation.navigate('Login');
+  };
+
   useEffect(() => {
     fetchUserByToken();
   }, []);
@@ -156,6 +161,13 @@ function UpdateProfile({navigation}) {
         loading={loading}
         style={{marginTop: 20}}>
         Update Profile
+      </Button>
+      <Button
+          mode="contained"
+          onPress={logout}
+          loading={loading}
+          style={{marginTop: 20}}>
+        Logout
       </Button>
       <Snackbar
         visible={snackbarVisible}
