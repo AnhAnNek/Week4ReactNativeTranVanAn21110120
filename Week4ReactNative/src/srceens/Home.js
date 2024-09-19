@@ -9,7 +9,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons'; // Or any other icon library you're using
 import CourseScreen from './Course';
 import UpdateProfile from './UpdateProfile';
-import kaka from './kaka';
+import BestSale from './BestSale';
 function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -113,8 +113,8 @@ export default function Home() {
           } else if (route.name === 'Course') {
             iconName = focused ? 'book' : 'book-outline';
           }
-          else if (route.name === 'Star') {
-            iconName = focused ? 'star' : 'book-outline';
+          else if (route.name === 'BestSale') {
+            iconName = focused ? 'star' : 'star-outline';
           }
 
 
@@ -127,7 +127,7 @@ export default function Home() {
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
       <Tab.Screen name="Course" component={CourseScreen} />
-      <Tab.Screen name="Star" component={kaka} />
+      <Tab.Screen name="BestSale" component={BestSale} />
     </Tab.Navigator>
   );
 }

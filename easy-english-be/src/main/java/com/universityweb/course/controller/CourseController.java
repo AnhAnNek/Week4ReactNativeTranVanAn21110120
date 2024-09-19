@@ -32,7 +32,7 @@ public class CourseController {
     }
 
     @GetMapping("/filter")
-    public ResponseEntity<List<Course> > filterCourse(@RequestParam int price, @RequestParam String name) {
+    public ResponseEntity<List<Course>> filterCourse(@RequestParam int price, @RequestParam String name) {
         return ResponseEntity.ok(courseService.filterCourse(price, name));
     }
 
@@ -44,7 +44,7 @@ public class CourseController {
 
     @GetMapping("/top-10-sales")
     public ResponseEntity<List<Course>> getTop10CoursesBySales() {
-        List<Course> courses = enrollmentService.findTop10CoursesBySales();
+        List<Course> courses = courseService.getTop10Courses();
         return ResponseEntity.ok(courses);
     }
 }

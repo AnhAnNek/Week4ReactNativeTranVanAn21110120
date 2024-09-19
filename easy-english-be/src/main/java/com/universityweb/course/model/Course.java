@@ -47,6 +47,9 @@ public class Course {
     @Column(name = "created_by")
     private String createdBy;
 
+    @Column(name = "count_sale")
+    private int countSale;
+
     @CreationTimestamp
     @Column(name = "created_at")
     private String createdAt;

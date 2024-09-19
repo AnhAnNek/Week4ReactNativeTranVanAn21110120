@@ -9,4 +9,6 @@ public interface CourseRepository extends JpaRepository<Course, Integer> {
     Course findById(int id);
 
     List<Course> findByPriceGreaterThanAndTitleContaining(int price, String name);
+
+    List<Course> findTop10ByOrderByCountSaleDesc();
 }
