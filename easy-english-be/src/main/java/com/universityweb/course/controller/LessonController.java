@@ -9,17 +9,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @CrossOrigin
+@RequestMapping("/lessons")
 @RestController
 public class LessonController {
     @Autowired
     private LessonService lessonService;
 
-    @GetMapping("/lessons")
+    @GetMapping("")
     public List<Lesson> getAllLesson() {
         return lessonService.getAllLessons();
     }
 
-    @PostMapping("/lessons")
+    @PostMapping("")
     public String newLesson(@RequestBody LessonRequest lessonRequest) {
         lessonService.newLesson(lessonRequest);
         return "Lesson added successfully";

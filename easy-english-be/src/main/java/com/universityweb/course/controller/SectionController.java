@@ -9,17 +9,18 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @CrossOrigin
+@RequestMapping("/sections")
 @RestController
 public class SectionController {
     @Autowired
     private SectionService sectionService;
 
-    @GetMapping("/sections")
+    @GetMapping("")
     public List<Section> getAllSection() {
         return sectionService.getAllSections();
     }
 
-    @PostMapping("/sections")
+    @PostMapping("")
     public String newSection(@RequestBody SectionRequest sectionRequest) {
         sectionService.newSection(sectionRequest);
         return "Section added successfully";
