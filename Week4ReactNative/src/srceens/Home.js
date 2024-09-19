@@ -1,18 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { SafeAreaView } from 'react-native';
-import {
-  ActivityIndicator,
-  Button,
-  Card,
-  Snackbar,
-  Text,
-} from 'react-native-paper';
+import { ActivityIndicator, Card, Snackbar, Text } from 'react-native-paper';
 import { API_URL } from '../utils/constants';
 import { getToken, removeToken } from '../utils/authUtils';
 import { get } from '../utils/httpRequest';
 import tw from 'twrnc';
-
-function Home({ navigation }) {
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Ionicons } from '@expo/vector-icons'; // Or any other icon library you're using
+import CourseScreen from './Course';
+import UpdateProfile from './UpdateProfile';
+import kaka from './kaka';
+function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -88,34 +86,6 @@ function Home({ navigation }) {
           )}
         </Card>
       )}
-      <Button
-        mode="contained"
-        onPress={fetchUserByToken}
-        loading={loading}
-        style={tw`mt-5`}>
-        Reload
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate('UpdateProfile')}
-        loading={loading}
-        style={tw`mt-5`}>
-        Navigate to Update Profile
-      </Button>
-      <Button
-        mode="contained"
-        onPress={() => navigation.navigate('Course')}
-        loading={loading}
-        style={tw`mt-5`}>
-        Navigate to Course
-      </Button>
-      <Button
-        mode="contained"
-        onPress={logout}
-        loading={loading}
-        style={tw`mt-5`}>
-        Logout
-      </Button>
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
@@ -126,4 +96,38 @@ function Home({ navigation }) {
   );
 }
 
-export default Home;
+
+const Tab = createBottomTabNavigator();
+
+export default function Home() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'UpdateProfile') {
+            iconName = focused ? 'person' : 'person-outline';
+          } else if (route.name === 'Course') {
+            iconName = focused ? 'book' : 'book-outline';
+          }
+          else if (route.name === 'Star') {
+            iconName = focused ? 'star' : 'book-outline';
+          }
+
+
+          // Return any icon component from your icon library
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: 'tomato',
+        tabBarInactiveTintColor: 'gray',
+      })}>
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
+      <Tab.Screen name="Course" component={CourseScreen} />
+      <Tab.Screen name="Star" component={kaka} />
+    </Tab.Navigator>
+  );
+}
