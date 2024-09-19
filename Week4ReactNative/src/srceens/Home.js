@@ -1,5 +1,5 @@
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView} from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native';
 import {
   ActivityIndicator,
   Button,
@@ -7,12 +7,12 @@ import {
   Snackbar,
   Text,
 } from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {getToken, removeToken} from '../utils/authUtils';
-import {get} from '../utils/httpRequest';
+import { API_URL } from '../utils/constants';
+import { getToken, removeToken } from '../utils/authUtils';
+import { get } from '../utils/httpRequest';
 import tw from 'twrnc';
 
-function Home({navigation}) {
+function Home({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -23,7 +23,7 @@ function Home({navigation}) {
     try {
       const tokenStr = await getToken();
       const response = await get(`${API_URL}/auth/get-user-by-token`, {
-        params: {tokenStr},
+        params: { tokenStr },
       });
       if (response.status === 200) {
         setUser(response.data);
@@ -39,13 +39,13 @@ function Home({navigation}) {
     }
   };
 
-    useEffect(() => {
-        navigation.setOptions({
-            headerLeft: () => null,
-        });
+  useEffect(() => {
+    navigation.setOptions({
+      headerLeft: () => null,
+    });
 
-        fetchUserByToken();
-    }, []);
+    fetchUserByToken();
+  }, []);
 
   const logout = () => {
     removeToken();
@@ -101,6 +101,13 @@ function Home({navigation}) {
         loading={loading}
         style={tw`mt-5`}>
         Navigate to Update Profile
+      </Button>
+      <Button
+        mode="contained"
+        onPress={() => navigation.navigate('Course')}
+        loading={loading}
+        style={tw`mt-5`}>
+        Navigate to Course
       </Button>
       <Button
         mode="contained"

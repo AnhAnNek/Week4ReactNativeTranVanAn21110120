@@ -1,0 +1,40 @@
+server:
+  port: 8001
+  
+  prod:
+    url: ${PROD_BASE_URL}
+
+spring:
+  application:
+    name: easy-english-app
+  
+  devtools:
+    livereload:
+      enabled: true
+  datasource:
+    url: jdbc:postgresql://${PROD_DB_URL}
+    username: ${PROD_DB_USER}
+    password: ${PROD_DB_PASSWORD}
+    driverClassName: org.postgresql.Driver
+  sql:
+    init:
+      mode: always
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    open-in-view: true
+
+logging:
+  file:
+    name: mylog.log
+  level:
+    root: info
+
+frontend:
+  url: ${PROD_FRONTEND_URL}
+
+third-party:
+  sending-email:
+    address: ${PROD_SENDING_EMAIL_ADDRESS}
+    password: ${PROD_SENDING_EMAIL_PASSWORD}
