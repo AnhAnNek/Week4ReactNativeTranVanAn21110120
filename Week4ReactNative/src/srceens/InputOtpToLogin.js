@@ -1,12 +1,12 @@
-import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {post} from '../utils/httpRequest';
-import {saveToken} from '../utils/authUtils';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { Button, Snackbar, Text, TextInput } from 'react-native-paper';
+import { API_URL } from '../utils/constants';
+import { post } from '../utils/httpRequest';
+import { saveToken } from '../utils/authUtils';
 
-const InputOtpToLogin = ({route, navigation}) => {
-  const {username} = route.params;
+const InputOtpToLogin = ({ route, navigation }) => {
+  const { username } = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -20,7 +20,7 @@ const InputOtpToLogin = ({route, navigation}) => {
     if (otp.length === 6 && username.trim() !== '') {
       setLoading(true);
       try {
-        const loginWithOtpRequest = {username, otp};
+        const loginWithOtpRequest = { username, otp };
         const response = await post(
           `${API_URL}/auth/login-with-otp`,
           loginWithOtpRequest,
@@ -32,6 +32,7 @@ const InputOtpToLogin = ({route, navigation}) => {
           await saveToken(tokenStr);
           setSnackbarVisible(true);
           setError('');
+        
           navigation.navigate('Home');
         } else {
           setError('Invalid OTP, please try again.');

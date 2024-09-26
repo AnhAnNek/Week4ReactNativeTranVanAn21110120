@@ -1,17 +1,20 @@
-import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {put} from '../utils/httpRequest';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, View } from 'react-native';
+import { Button, Snackbar, Text, TextInput } from 'react-native-paper';
+import { API_URL } from '../utils/constants';
+import { put } from '../utils/httpRequest';
 
-const InputOtpToUpdateProfile = ({route, navigation}) => {
-  const {user} = route.params;
+const InputOtpToUpdateProfile = ({ route, navigation }) => {
+  const { user } = route.params;
   const [otp, setOtp] = useState('');
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
+  useEffect(() => {
+    setOtp('');
+  }, []);
   const handleSubmit = async () => {
     if (otp.length !== 6) {
       setError('Please enter a valid 6-digit OTP.');
@@ -20,7 +23,7 @@ const InputOtpToUpdateProfile = ({route, navigation}) => {
 
     setLoading(true);
     try {
-      const editedUser = {...user, otp: otp};
+      const editedUser = { ...user, otp: otp };
       console.log(`editedUser: ${editedUser}`);
 
       const response = await put(
@@ -30,7 +33,7 @@ const InputOtpToUpdateProfile = ({route, navigation}) => {
       if (response?.status === 200) {
         setSnackbarMessage('Profile updated successfully!');
         setTimeout(() => {
-          navigation.navigate('UpdateProfile');
+          navigation.navigate('Home', { screen: 'UpdateProfile' });
         }, 500);
       } else {
         setError('Invalid OTP, please try again.');

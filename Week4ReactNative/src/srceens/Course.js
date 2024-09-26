@@ -8,83 +8,137 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
-  RefreshControl
+  RefreshControl,
+  ToastAndroid,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { get } from '../utils/httpRequest'
-import {BASE_URL} from "../utils/constants";
+import { get } from '../utils/httpRequest';
+import { BASE_URL } from '../utils/constants';
+
+const DEFAULT_SIZE = 8;
 
 const CourseScreen = ({ navigation }) => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [price, setPrice] = useState(0);
+  const [price, setPrice] = useState(''); // Initialize as a string to handle input
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchCourses = async (pageNumber = 1) => {
-    if (!hasMore) return;
+  const fetchFilteredCourses = async (pageNumber = 1) => {
+    const response = await get(`${BASE_URL}/courses/filter`, {
+      params: {
+        price: price !== '' ? parseInt(price, 10) : 0,
+        name: searchQuery,
+        pageNumber: pageNumber,
+        size: DEFAULT_SIZE,
+      },
+    });
+    const newCourses = response.data;
+    console.log('Filtered courses size: ' + newCourses.length);
+    return newCourses;
+  };
 
+  const loadFilteredCourses = async (pageNumber = 1) => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const response = await get(`${BASE_URL}/courses`, {
-        params: {
-          price: price !== '' ? parseInt(price, 10) : 0,
-          name: searchQuery,
-          pageNumber: pageNumber,
-          size: 8
-        },
-      });
+      const newCourses = await fetchFilteredCourses(pageNumber);
 
-      const newCourses = response.data;
-
-      setCourses((prevCourses) => [...prevCourses, ...newCourses]);
-      setHasMore(newCourses.length === 10);
-      setLoading(false);
+      setHasMore(newCourses.length >= DEFAULT_SIZE);
+      setCourses(newCourses);
+      setPageNumber(pageNumber); // Reset page number to the new value
     } catch (error) {
       console.error('Error fetching courses:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  // Gọi API để lọc các khóa học theo giá và tên
-  const filterCourses = async (pageNumber = 1) => {
-    try {
-      setLoading(true);
-      const response = await get(`${BASE_URL}/courses/filter`, {
-        params: {
-          price: price !== '' ? parseInt(price, 10) : 0, // Dynamic price from input
-          name: searchQuery, // Truyền tên khóa học từ input tìm kiếm
-          pageNumber: pageNumber,
-          size: 10
-        },
-      });
+  const fetchCourses = async (pageNumber = 1, size = DEFAULT_SIZE) => {
+    const response = await get(`${BASE_URL}/courses`, {
+      params: {
+        pageNumber: pageNumber,
+        size: size,
+      },
+    });
+    const newCourses = response.data;
+    console.log('Courses size: ' + newCourses.length);
+    return newCourses;
+  };
 
-      setCourses(response.data); // Cập nhật danh sách khóa học sau khi lọc
-      setLoading(false);
+  const initCourses = async () => {
+    setLoading(true);
+    try {
+      const newCourses = await fetchCourses(1);
+      setHasMore(newCourses.length >= DEFAULT_SIZE);
+      setCourses(newCourses);
+      setPageNumber(1); // Reset page number during initialization
     } catch (error) {
-      console.error('Error filtering courses:', error);
+      console.error('Error fetching courses:', error);
+    } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchCourses(pageNumber);
-  }, [pageNumber]);
+    initCourses();
+  }, []);
 
   const goToCourseDetail = (course) => {
     navigation.navigate('CourseDetail', { course });
   };
 
-  const loadMoreCourses = () => {
-    console.log(`loadMoreCourses() method`)
-    setPageNumber((prevPageNumber) => prevPageNumber + 1);
+  const loadMoreCourses = async () => {
+    if (loading || !hasMore) {
+      const message = loading
+        ? 'Loading is already in progress. Please wait...'
+        : 'No more courses to load!';
+      if (Platform.OS === 'android') {
+        ToastAndroid.show(message, ToastAndroid.SHORT);
+      } else {
+        // alert(message);
+      }
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const page = pageNumber + 1;
+      let newCourses = [];
+
+      if (!searchQuery && price === '') {
+        newCourses = await fetchCourses(page);
+      } else {
+        newCourses = await fetchFilteredCourses(page);
+      }
+
+      setHasMore(newCourses.length >= DEFAULT_SIZE);
+      setCourses((prevCourses) => [
+        ...prevCourses,
+        ...newCourses.filter(
+          (newCourse) =>
+            !prevCourses.some((prevCourse) => prevCourse.id === newCourse.id)
+        ),
+      ]);
+      setPageNumber(page); // Increment page number
+    } catch (error) {
+      console.error('Error loading more courses:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const refreshList = () => {
-    setLoading(true);
+  const refreshCourse = () => {
+    setSearchQuery('');
+    setPrice('');
     setPageNumber(1);
-    fetchCourses(1);
+    initCourses();
+  };
+
+  const filterCourses = () => {
+    setPageNumber(1); // Reset page number when filtering
+    loadFilteredCourses(1);
   };
 
   const renderCourseItem = ({ item }) => (
@@ -99,12 +153,10 @@ const CourseScreen = ({ navigation }) => {
         </View>
       </View>
     </TouchableOpacity>
-
   );
 
   return (
     <View style={styles.container}>
-      {/* Thanh tìm kiếm */}
       <View style={styles.searchBarContainer}>
         <Icon name="search-outline" size={20} color="#fff" />
         <TextInput
@@ -119,7 +171,6 @@ const CourseScreen = ({ navigation }) => {
         </TouchableOpacity>
       </View>
 
-      {/* Input for price filtering */}
       <View style={styles.priceContainer}>
         <Text style={styles.priceLabel}>Giá từ:</Text>
         <TextInput
@@ -132,20 +183,18 @@ const CourseScreen = ({ navigation }) => {
         />
       </View>
 
-      {/* Hiển thị loading */}
-      {loading ? <ActivityIndicator size="large" color="#000" /> : null}
-
-      {/* Hiển thị danh sách khóa học */}
       <FlatList
         data={courses}
         renderItem={renderCourseItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={(item, index) => `${item.id}_${index}`}
         contentContainerStyle={styles.courseList}
-        onEndReached={loadMoreCourses} // Load more when the user reaches the end
-        onEndReachedThreshold={0.5} // Trigger loadMoreCourses when 50% of the list is visible
-        ListFooterComponent={hasMore && <ActivityIndicator size="small" color="#000" />}
+        onEndReached={loadMoreCourses}
+        onEndReachedThreshold={0.5}
+        ListFooterComponent={
+          hasMore ? <ActivityIndicator size="small" color="#000" /> : null
+        }
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={refreshList} />
+          <RefreshControl refreshing={loading} onRefresh={refreshCourse} />
         }
       />
     </View>

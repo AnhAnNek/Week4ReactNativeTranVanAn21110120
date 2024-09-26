@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator } from 'react-native';
+import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios'; // Để gọi API
 import { getToken } from '../utils/authUtils'; // Hàm lấy token
@@ -10,33 +10,41 @@ const PromotionBanner = () => {
     return (
         <View style={styles.promotionBanner}>
             <Image
-                source={{ uri: 'https://img-c.udemycdn.com/course/240x135/2776760_f176_10.jpg' }} // Thay bằng link hình ảnh của bạn
+                source={{ uri: 'https://www.shutterstock.com/image-photo/education-technology-ai-artificial-intelligence-600nw-2496843175.jpg' }} // Thay bằng link hình ảnh của bạn
                 style={styles.promotionImage}
             />
             <View style={styles.promotionContent}>
-                <Text style={styles.promotionTitle}>Top 10 khóa học</Text>
+                <Text style={styles.promotionTitle}>Top 10 best course</Text>
             </View>
         </View>
     );
 };
 
-const CourseCard = ({ course }) => {
+const CourseCard = ({ course, onPress }) => {
     return (
-        <View style={styles.courseCard}>
-            <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
-            <Text style={styles.courseTitle}>{course.title}</Text>
-            <Text style={styles.instructorText}>{course.createdBy}</Text>
-            <Text style={styles.instructorText}>Số học viên: {course.countSale}</Text>
-            <View style={styles.priceContainer}>
-                <Text style={styles.priceText}>{course.price} đ</Text>
-                <Text style={styles.originalPriceText}>{course.originalPrice} đ</Text>
+        <TouchableOpacity onPress={onPress}>
+            <View style={styles.courseCard}>
+                <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
+                {/* Đảm bảo bao bọc văn bản trong <Text> */}
+                <Text style={styles.courseTitle}>{course.title}</Text>
+                <Text style={styles.instructorText}>{course.createdBy}</Text>
+                <Text style={styles.instructorText}>Số học viên: {course.countSale}</Text>
+                <View style={styles.priceContainer}>
+                    <Text style={styles.priceText}>{course.price} đ</Text>
+                    <Text style={styles.originalPriceText}>{course.originalPrice} đ</Text>
+                </View>
+                {course.bestSeller && (
+                    <TouchableOpacity onPress={onPress}>
+                        {/* Đảm bảo bao bọc văn bản "Bán chạy nhất" trong <Text> */}
+                        <Text style={styles.bestSeller}>Bán chạy nhất</Text>
+                    </TouchableOpacity>
+                )}
             </View>
-            {course.bestSeller && <Text style={styles.bestSeller}>Bán chạy nhất</Text>}
-        </View>
+        </TouchableOpacity>
     );
 };
 
-const CourseList = () => {
+const CourseList = ({ navigation }) => {
     const [courses, setCourses] = useState([]); // State để lưu danh sách khóa học
     const [loading, setLoading] = useState(true); // State để quản lý trạng thái loading
 
@@ -64,6 +72,10 @@ const CourseList = () => {
         return <ActivityIndicator size="large" color="#0000ff" />; // Hiển thị khi đang tải
     }
 
+    const goToCourseDetail = (course) => {
+        navigation.navigate('CourseDetail', { course }); // Điều hướng tới trang chi tiết
+    };
+
     return (
         <View>
             {/* Thêm banner quảng cáo ở trên */}
@@ -72,7 +84,12 @@ const CourseList = () => {
             {/* Danh sách khóa học */}
             <FlatList
                 data={courses}
-                renderItem={({ item }) => <CourseCard course={item} />}
+                renderItem={({ item }) => (
+                    <CourseCard
+                        course={item}
+                        onPress={() => goToCourseDetail(item)} // Truyền sự kiện onPress để điều hướng
+                    />
+                )}
                 keyExtractor={(item) => item.id.toString()}
                 horizontal={true}
                 showsHorizontalScrollIndicator={false}
@@ -104,18 +121,6 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 10,
     },
-    promotionSubtitle: {
-        fontSize: 16,
-        color: '#fff',
-        textAlign: 'center',
-        marginTop: 5,
-    },
-    promotionSuggested: {
-        fontSize: 14,
-        color: '#fff',
-        textAlign: 'center',
-        marginTop: 10,
-    },
     courseCard: {
         width: 250,
         margin: 10,
@@ -143,20 +148,6 @@ const styles = StyleSheet.create({
         fontSize: 14,
         color: '#555',
         marginVertical: 5,
-    },
-    ratingContainer: {
-        flexDirection: 'row',
-        alignItems: 'center',
-        marginVertical: 5,
-    },
-    ratingText: {
-        fontSize: 14,
-        marginRight: 5,
-    },
-    ratingsCount: {
-        fontSize: 14,
-        marginLeft: 5,
-        color: '#555',
     },
     priceContainer: {
         flexDirection: 'row',

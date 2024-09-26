@@ -106,15 +106,16 @@ export default function Home() {
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
 
-          if (route.name === 'Home') {
-            iconName = focused ? 'home' : 'home-outline';
-          } else if (route.name === 'UpdateProfile') {
+          // if (route.name === 'Home') {
+          //   iconName = focused ? 'home' : 'home-outline';
+          // } else 
+          if (route.name === 'UpdateProfile') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Course') {
             iconName = focused ? 'book' : 'book-outline';
           }
-          else if (route.name === 'BestSale') {
-            iconName = focused ? 'star' : 'star-outline';
+          else if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
           }
 
 
@@ -124,10 +125,11 @@ export default function Home() {
         tabBarActiveTintColor: 'tomato',
         tabBarInactiveTintColor: 'gray',
       })}>
-      <Tab.Screen name="Home" component={HomeScreen} />
-      <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
+      {/* <Tab.Screen name="Home" component={HomeScreen} /> */}
+      <Tab.Screen name="Home" component={BestSale} />
       <Tab.Screen name="Course" component={CourseScreen} />
-      <Tab.Screen name="BestSale" component={BestSale} />
+      <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
+
     </Tab.Navigator>
   );
 }
