@@ -169,6 +169,15 @@ function UpdateProfile({navigation}) {
           style={{marginTop: 20}}>
         Logout
       </Button>
+      <Button
+          mode="contained"
+          onPress={() => {
+            navigation.navigate('Cart');
+          }}
+          loading={loading}
+          style={{marginTop: 20}}>
+        Go To Cart
+      </Button>
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}

@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e11de16c-48a4-4f08-9d0a-550bc08f6782" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/Week4ReactNative/src/srceens/Course.js" beforeDir="false" afterPath="$PROJECT_DIR$/Week4ReactNative/src/srceens/Course.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Week4ReactNative/src/utils/constants.js" beforeDir="false" afterPath="$PROJECT_DIR$/Week4ReactNative/src/utils/constants.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -38,8 +37,9 @@
     "RunOnceActivity.OpenProjectViewOnStart": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "Spring Boot.LoginRegisterApplication.executor": "Run",
+    "git-widget-placeholder": "feature/new-b06",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/EasyEnglish/easy-english-be",
+    "last_opened_file_path": "F:/ResilioSync/WorkSpaces/FullStackApp/easy-english/easy-english-be",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -51,7 +51,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="jdk-21.0.1-openjdk-21.0.1-3183f394aec4-7d648f2c" />
+        <option value="bundled-jdk-9f38398b9061-39b83d9b5494-intellij.indexing.shared.core-IU-241.18034.62" />
+        <option value="bundled-js-predefined-1d06a55b98c1-0b3e54e931b4-JavaScript-IU-241.18034.62" />
       </set>
     </attachedChunks>
   </component>
@@ -68,6 +69,7 @@
       <workItem from="1726151947982" duration="606000" />
       <workItem from="1726405360847" duration="10000" />
       <workItem from="1726700357120" duration="435000" />
+      <workItem from="1728466201752" duration="2759000" />
     </task>
     <servers />
   </component>
