@@ -5,7 +5,7 @@ import {
     Button,
     ActivityIndicator,
     ScrollView,
-    StyleSheet, Linking,
+    StyleSheet,
 } from 'react-native';
 import {errorToast, successToast} from "../utils/methods";
 import authService from "../services/authService";
@@ -64,18 +64,15 @@ const Cart = () => {
 
     const handleCheckout = async () => {
         try {
-            const urlReturn = `${window.location.protocol}//${window.location.host}`;
             const paymentRequest = {
                 username: username,
                 method: 'VN_PAY',
-                urlReturn: urlReturn,
+                amount: cart.totalAmount, // Payment amount
+                urlReturn: 'your-app-scheme://success',
             };
 
             const paymentUrl = await paymentService.createPaymentOrder(paymentRequest);
             successToast('Checkout successful! Redirecting to payment...');
-
-            // Use Linking to redirect in React Native
-            await Linking.openURL(paymentUrl);
         } catch (error) {
             console.error(error?.message);
             errorToast('Error during checkout. Please try again.');

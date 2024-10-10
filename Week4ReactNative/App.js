@@ -13,6 +13,7 @@ import Course from './src/srceens/Course';
 import CourseDetail from './src/srceens/CourseDetail';
 import Cart from "./src/srceens/Cart";
 import Toast from "react-native-toast-message";
+import Orders from "./src/srceens/Orders";
 const Stack = createStackNavigator();
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
         <Stack.Screen name="Course" component={Course} />
         <Stack.Screen name="CourseDetail" component={CourseDetail} />
         <Stack.Screen name="Cart" component={Cart} />
+        <Stack.Screen name="Orders" component={Orders} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>
