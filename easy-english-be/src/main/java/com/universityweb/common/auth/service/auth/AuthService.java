@@ -2,8 +2,8 @@ package com.universityweb.common.auth.service.auth;
 
 import com.universityweb.common.auth.dto.UserDTO;
 import com.universityweb.common.auth.request.*;
-import com.universityweb.common.auth.response.ActiveAccountResponse;
 import com.universityweb.common.auth.response.LoginResponse;
+import com.universityweb.common.auth.response.ActiveAccountResponse;
 
 public interface AuthService {
 

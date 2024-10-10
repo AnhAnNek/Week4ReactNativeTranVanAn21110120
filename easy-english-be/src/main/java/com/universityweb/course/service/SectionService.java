@@ -3,11 +3,16 @@ package com.universityweb.course.service;
 import com.universityweb.course.model.Course;
 import com.universityweb.course.model.Section;
 import com.universityweb.course.model.request.SectionRequest;
+import com.universityweb.course.model.response.SectionResponse;
+import com.universityweb.course.repository.CourseRepository;
 import com.universityweb.course.repository.SectionRepository;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class SectionService {
@@ -15,46 +20,38 @@ public class SectionService {
     private SectionRepository sectionRepository;
 
     @Autowired
-    private CourseService courseService;
-
-
-    /*public void copy(Section section, SectionResponse sectionResponse) {
-        sectionResponse.setId(section.getId());
-        sectionResponse.setTitle(section.getTitle());
-        sectionResponse.setCreatedBy(section.getCreatedBy());
-        sectionResponse.setCreatedAt(section.getCreatedAt());
-
-        List<LessonResponse> lessonResponses = section.getLessons().stream()
-                .map(lesson -> {
-                    LessonResponse lessonResponse = new LessonResponse();
-                    lessonService.copy(lesson, lessonResponse);
-                    return lessonResponse;
-                })
-                .collect(Collectors.toList());
-        sectionResponse.setLessonResponses(lessonResponses);
-    }*/
-    public void deleteSection(int id) {
-        sectionRepository.deleteById(id);
-    }
-
-    public void newSection(SectionRequest sectionRequest) {
-        Section section = new Section();
-        Course course = courseService.getCourseById(sectionRequest.getCourseId());
-        section.setCourse(course);
-        section.setTitle(sectionRequest.getTitle());
-        section.setCreatedBy(sectionRequest.getCreatedBy());
-        sectionRepository.save(section);
-    }
-
-    public void updateSection(Section section) {
-        sectionRepository.save(section);
-    }
-
-    public List<Section> getAllSections() {
-        return sectionRepository.findAll();
-    }
-
-    public Section getSectionById(int id) {
+    private CourseRepository courseRepository;
+    public Optional<Section> getSectionById(Long id) {
         return sectionRepository.findById(id);
+    }
+
+    public void createSection(SectionRequest sectionRequest) {
+        Section section = new Section();
+        Course course = courseRepository.findById(sectionRequest.getCourseId())
+                .orElseThrow(() -> new RuntimeException("Course not found"));
+        BeanUtils.copyProperties(sectionRequest, section);
+        section.setCourse(course);
+        sectionRepository.save(section);
+    }
+    public void updateSection(SectionRequest sectionRequest) {
+        Section section = sectionRepository.findById(sectionRequest.getId())
+                .orElseThrow(() -> new RuntimeException("Section not found"));
+        BeanUtils.copyProperties(sectionRequest, section);
+        sectionRepository.save(section);
+    }
+
+    public void deleteSection(SectionRequest sectionRequest) {
+        sectionRepository.deleteById(sectionRequest.getId());
+    }
+    public List<SectionResponse> getAllSectionByCourse(SectionRequest sectionRequest) {
+        Long courseId = sectionRequest.getCourseId();
+        List<Section> sections = sectionRepository.findByCourseId(courseId);
+        List<SectionResponse> sectionResponses = new ArrayList<>();
+        for (Section section : sections) {
+            SectionResponse sectionResponse = new SectionResponse();
+            BeanUtils.copyProperties(section, sectionResponse);
+            sectionResponses.add(sectionResponse);
+        }
+        return sectionResponses;
     }
 }

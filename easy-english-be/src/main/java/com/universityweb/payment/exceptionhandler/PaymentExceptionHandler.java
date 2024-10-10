@@ -1,5 +1,7 @@
 package com.universityweb.payment.exceptionhandler;
 
+import com.universityweb.common.auth.exception.UserNotFoundException;
+import com.universityweb.common.auth.exceptionhandler.AuthExceptionHandler;
 import com.universityweb.common.response.ErrorResponse;
 import com.universityweb.payment.exception.PaymentNotFoundException;
 import com.universityweb.payment.exception.UnsupportedPaymentMethodException;

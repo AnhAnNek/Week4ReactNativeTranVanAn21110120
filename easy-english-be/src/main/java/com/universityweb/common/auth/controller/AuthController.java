@@ -2,8 +2,8 @@ package com.universityweb.common.auth.controller;
 
 import com.universityweb.common.auth.dto.UserDTO;
 import com.universityweb.common.auth.request.*;
-import com.universityweb.common.auth.response.ActiveAccountResponse;
 import com.universityweb.common.auth.response.LoginResponse;
+import com.universityweb.common.auth.response.ActiveAccountResponse;
 import com.universityweb.common.auth.service.auth.AuthService;
 import com.universityweb.common.response.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;

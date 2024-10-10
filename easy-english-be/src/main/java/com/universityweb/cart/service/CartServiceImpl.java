@@ -43,11 +43,11 @@ public class CartServiceImpl implements CartService {
     @Override
     public CartItemResponse addItemToCart(String username, Long courseId) {
         Cart cart = getOrCreateCart(username);
-        Course course = courseService.getCourseById((int) (long) courseId);
+        Course course = courseService.getCourseById(courseId);
 
         CartItem cartItem = CartItem.builder()
                 .status(CartItem.EStatus.ACTIVE)
-                .price(new BigDecimal(course.getPrice()))
+                .price(course.getPrice().getSalePrice())
                 .discountPercent(BigDecimal.ZERO)
                 .updatedAt(LocalDateTime.now())
                 .course(course)
@@ -64,10 +64,10 @@ public class CartServiceImpl implements CartService {
     public CartItemResponse updateItem(Long cartItemId) {
         CartItem cartItem = getCartItemByCartItemId(cartItemId);
 
-        Long courseId = (long) cartItem.getCourse().getId();
-        Course course = courseService.getCourseById((int) (long) courseId);
+        Long courseId = cartItem.getCourse().getId();
+        Course course = courseService.getCourseById(courseId);
 
-        BigDecimal discountPercent = calculateDiscount(new BigDecimal(course.getPrice()), cartItem.getPrice());
+        BigDecimal discountPercent = calculateDiscount(course.getPrice().getPrice(), cartItem.getPrice());
         cartItem.setDiscountPercent(discountPercent);
         CartItemResponse cartItemResponse = cartItemMapper.toDTO(cartItem);
         updateCartTime(cartItem.getCart());

@@ -2,10 +2,7 @@ package com.universityweb.cart.entity;
 
 import com.universityweb.course.model.Course;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

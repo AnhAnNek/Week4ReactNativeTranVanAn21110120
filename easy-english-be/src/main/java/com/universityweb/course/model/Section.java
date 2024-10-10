@@ -2,24 +2,25 @@ package com.universityweb.course.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.universityweb.test.entity.Test;
 import jakarta.persistence.*;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
 import java.util.List;
 
-@Data
 @Getter
 @Setter
 @Entity
 @Table(name = "sections")
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class Section {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private int id;
+    private Long id;
 
     @Column(name = "title")
     private String title;
@@ -39,4 +40,8 @@ public class Section {
     @JoinColumn(name = "course_id")
     @JsonBackReference
     private Course course;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "test_id")
+    private Test test;
 }

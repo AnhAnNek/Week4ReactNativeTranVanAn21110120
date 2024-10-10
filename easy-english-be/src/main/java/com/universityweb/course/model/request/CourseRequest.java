@@ -1,22 +1,27 @@
-package com.universityweb.course.model.response;
+package com.universityweb.course.model.request;
 
-import jakarta.persistence.Column;
-import lombok.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.universityweb.course.model.Review;
+import com.universityweb.course.model.Section;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.math.BigDecimal;
 import java.util.List;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
-public class CourseResponse {
+@AllArgsConstructor
+public class CourseRequest {
     private Long id;
     private String title;
     private String category;
     private String level;
     private String imageUrl;
     private int duration;
+    private int price;
     private String description;
     private double rating;
     private int ratingCount;
@@ -24,6 +29,6 @@ public class CourseResponse {
     private String createdBy;
     private String createdAt;
     private Boolean isActive;
-
-
+    private int pageNumber = 0;
+    private int size = 10;
 }

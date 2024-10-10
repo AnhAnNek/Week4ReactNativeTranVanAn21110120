@@ -42,3 +42,5 @@ mylog.log.*.gz
 *.plantuml
 
 **/.env
+
+.DS_Store

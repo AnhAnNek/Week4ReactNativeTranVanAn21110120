@@ -4,6 +4,5 @@ public enum LessonType {
     TEXT,
     AUDIO,
     VIDEO,
-
     ZOOM
 }

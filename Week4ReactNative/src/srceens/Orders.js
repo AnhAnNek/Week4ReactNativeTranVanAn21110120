@@ -28,6 +28,7 @@ const Orders = () => {
             setOrders(fetchedOrders);
         } catch (error) {
             console.error(error?.message);
+            setOrders([])
             errorToast('Error fetching orders');
         } finally {
             setLoading(false);

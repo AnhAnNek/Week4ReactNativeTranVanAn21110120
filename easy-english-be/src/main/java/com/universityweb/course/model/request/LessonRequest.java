@@ -5,12 +5,12 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class LessonRequest {
-    private int sectionId;
+    private Long id;
+
+    private Long sectionId;
 
     private String title;
 
