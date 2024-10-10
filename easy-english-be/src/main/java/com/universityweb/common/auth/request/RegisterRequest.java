@@ -4,7 +4,6 @@ import com.universityweb.common.auth.entity.User;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 
 public record RegisterRequest(
         @Schema(

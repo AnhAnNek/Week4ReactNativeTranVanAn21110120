@@ -2,7 +2,7 @@ package com.universityweb.common.security;
 
 public class SecurityUtils {
 
-    public static final int EXPIRATION_DURATION_MILLIS = 24 * 60 * 60 * 1000;
+    public static final int EXPIRATION_DURATION_MILLIS = 24 * 60 * 60 * 1000000;
     public static final String DEFAULT_TOKEN_TYPE = "Bearer ";
 
     public static final String[] PERMIT_ALL_URLS = {
@@ -12,7 +12,9 @@ public class SecurityUtils {
             "api/v1/auth/generate-otp-to-login/**",
             "api/v1/auth/login-with-otp/**",
             "api/v1/auth/login/**",
-            "api/v1/auth/get-user-by-token/**"
+            "api/v1/auth/get-user-by-token/**",
+            "api/v1/auth/resend-otp-to-active-account/**",
+            "ws"
     };
 
     public static final String[] SWAGGER_URLS = {

@@ -6,7 +6,6 @@ import com.universityweb.common.auth.mapper.UserMapper;
 import com.universityweb.common.auth.repos.UserRepos;
 import com.universityweb.common.auth.request.UpdateProfileRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 

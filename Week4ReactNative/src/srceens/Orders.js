@@ -9,11 +9,13 @@ import {
 } from 'react-native';
 import orderService from '../services/orderService';
 import { successToast, errorToast } from '../utils/methods';
+import authService from "../services/authService";
 
 const Orders = () => {
+    const user = authService.getCurUser();
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [activeTab, setActiveTab] = useState('Completed'); // Default tab
+    const [activeTab, setActiveTab] = useState('All'); // Default tab
 
     useEffect(() => {
         fetchOrders();
@@ -22,7 +24,7 @@ const Orders = () => {
     const fetchOrders = async () => {
         setLoading(true);
         try {
-            const fetchedOrders = await orderService.getOrders();
+            const fetchedOrders = await orderService.getOrders(user?.username, 0, 100);
             setOrders(fetchedOrders);
         } catch (error) {
             console.error(error?.message);
@@ -98,7 +100,7 @@ const Orders = () => {
 
                 {/* Tabs */}
                 <View style={styles.tabContainer}>
-                    {['To Ship', 'To Receive', 'Completed', 'Cancelled', 'Returned'].map((tab) => (
+                    {['All', 'Paid', 'Failed', 'Refunded'].map((tab) => (
                         <TouchableOpacity
                             key={tab}
                             style={[

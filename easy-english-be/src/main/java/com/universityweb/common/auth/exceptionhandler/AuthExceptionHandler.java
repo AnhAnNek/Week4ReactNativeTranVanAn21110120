@@ -105,4 +105,12 @@ public class AuthExceptionHandler {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(errorResponse);
     }
+
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ErrorResponse> handle(SecurityException e) {
+        ErrorResponse errorResponse = new ErrorResponse(e.getMessage(), LocalDateTime.now());
+        log.error("Security error: ", e);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(errorResponse);
+    }
 }

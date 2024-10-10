@@ -1,4 +1,5 @@
 import { get, post } from '../utils/httpRequest';
+import {put} from "axios";
 
 const SUFFIX_PAYMENT_API_URL = '/payment';
 
@@ -15,7 +16,7 @@ const createPaymentOrder = async (paymentRequest) => {
 
 const getResult = async (params) => {
   const path = `${SUFFIX_PAYMENT_API_URL}/result`;
-  const response = await get(path, {
+  const response = await put(path, {
     params
   });
 

@@ -2,8 +2,8 @@ package com.universityweb.common.auth.controller;
 
 import com.universityweb.common.auth.dto.UserDTO;
 import com.universityweb.common.auth.request.*;
-import com.universityweb.common.auth.response.LoginResponse;
 import com.universityweb.common.auth.response.ActiveAccountResponse;
+import com.universityweb.common.auth.response.LoginResponse;
 import com.universityweb.common.auth.service.auth.AuthService;
 import com.universityweb.common.response.ErrorResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -257,6 +257,38 @@ public class AuthController {
         log.info("UpdateOwnPassword method called with request: {}", updatePasswordRequest);
         UserDTO userDTO = authService.updateOwnPassword(updatePasswordRequest);
         log.info("UpdateOwnPassword method completed successfully with response: {}", userDTO);
+        return ResponseEntity.ok(userDTO);
+    }
+
+    @Operation(
+            summary = "Resend OTP for Account Activation",
+            description = "Resends the OTP to the user's email for account activation.",
+            responses = {
+                    @ApiResponse(
+                            description = "OTP sent successfully.",
+                            responseCode = "200",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = UserDTO.class)
+                            )
+                    ),
+                    @ApiResponse(
+                            description = "User not found or internal server error.",
+                            responseCode = "404",
+                            content = @Content(
+                                    mediaType = "application/json",
+                                    schema = @Schema(implementation = ErrorResponse.class)
+                            )
+                    )
+            }
+    )
+    @PostMapping("/resend-otp-to-active-account/{username}")
+    public ResponseEntity<UserDTO> resendOTPToActiveAccount(
+            @PathVariable String username
+    ) {
+        log.info("Received request to resend OTP for user: {}", username);
+        UserDTO userDTO = authService.resendOTPToActiveAccount(username);
+        log.info("OTP resent successfully for user: {}", username);
         return ResponseEntity.ok(userDTO);
     }
 

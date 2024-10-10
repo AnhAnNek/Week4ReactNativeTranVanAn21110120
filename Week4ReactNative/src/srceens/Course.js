@@ -27,7 +27,7 @@ const CourseScreen = ({ navigation }) => {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchFilteredCourses = async (pageNumber = 1) => {
-    const response = await get(`${API_URL}/courses/filter`, {
+    const response = await get(`${API_URL}/course/filter`, {
       params: {
         price: price !== '' ? parseInt(price, 10) : 0,
         name: searchQuery,
@@ -56,7 +56,7 @@ const CourseScreen = ({ navigation }) => {
   };
 
   const fetchCourses = async (pageNumber = 1, size = DEFAULT_SIZE) => {
-    const response = await get(`${API_URL}/courses`, {
+    const response = await get(`${API_URL}/course`, {
       params: {
         pageNumber: pageNumber,
         size: size,

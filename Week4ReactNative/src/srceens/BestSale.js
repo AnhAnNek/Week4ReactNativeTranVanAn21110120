@@ -52,7 +52,7 @@ const CourseList = ({ navigation }) => {
         const fetchCourses = async () => {
             try {
                 const tokenStr = await getToken(); // Lấy token
-                const response = await axios.get(`${API_URL}/courses/top-10-sales`, {
+                const response = await axios.get(`${API_URL}/course/top-10-sales`, {
                     headers: {
                         Authorization: `Bearer ${tokenStr}`,
                     },

@@ -2,8 +2,8 @@ package com.universityweb.common.auth.service.auth;
 
 import com.universityweb.common.auth.dto.UserDTO;
 import com.universityweb.common.auth.request.*;
-import com.universityweb.common.auth.response.LoginResponse;
 import com.universityweb.common.auth.response.ActiveAccountResponse;
+import com.universityweb.common.auth.response.LoginResponse;
 
 public interface AuthService {
 
@@ -30,4 +30,6 @@ public interface AuthService {
     void generateAndSendOtpToUpdateProfile(String username);
 
     UserDTO updateProfileWithOTP(UpdateProfileWithOTPRequest updateProfileRequest);
+
+    UserDTO resendOTPToActiveAccount(String username);
 }

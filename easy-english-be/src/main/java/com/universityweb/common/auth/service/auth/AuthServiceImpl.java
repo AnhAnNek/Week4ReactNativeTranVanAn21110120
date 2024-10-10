@@ -3,9 +3,9 @@ package com.universityweb.common.auth.service.auth;
 import com.universityweb.common.auth.dto.UserDTO;
 import com.universityweb.common.auth.entity.User;
 import com.universityweb.common.auth.exception.EmailNotFoundException;
+import com.universityweb.common.auth.exception.UserAlreadyActiveException;
 import com.universityweb.common.auth.exception.UserAlreadyExistsException;
 import com.universityweb.common.auth.exception.UserNotActiveException;
-import com.universityweb.common.auth.exception.UserNotFoundException;
 import com.universityweb.common.auth.mapper.UserMapper;
 import com.universityweb.common.auth.repos.UserRepos;
 import com.universityweb.common.auth.request.*;
@@ -216,6 +216,21 @@ public class AuthServiceImpl implements AuthService {
         user.setBio(updateProfileRequest.getBio());
         user.setGender(updateProfileRequest.getGender());
         user.setDob(updateProfileRequest.getDob());
+
+        return saveUserAndConvertToDTO(user);
+    }
+
+    @Override
+    public UserDTO resendOTPToActiveAccount(String username) {
+        User user = userService.loadUserByUsername(username);
+        String email = user.getEmail();
+
+        if (user.getStatus() == User.EStatus.ACTIVE) {
+            String msg = "User account is already active. No OTP can be resent.";
+            throw new UserAlreadyActiveException(msg);
+        }
+
+        otpService.generateAndSendOtp(email, OtpService.EPurpose.ACTIVE_ACCOUNT);
 
         return saveUserAndConvertToDTO(user);
     }
