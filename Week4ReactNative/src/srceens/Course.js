@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import { get } from '../utils/httpRequest';
-import { BASE_URL } from '../utils/constants';
+import {API_URL, BASE_URL} from '../utils/constants';
 
 const DEFAULT_SIZE = 8;
 
@@ -27,7 +27,7 @@ const CourseScreen = ({ navigation }) => {
   const [hasMore, setHasMore] = useState(true);
 
   const fetchFilteredCourses = async (pageNumber = 1) => {
-    const response = await get(`${BASE_URL}/courses/filter`, {
+    const response = await get(`${API_URL}/courses/filter`, {
       params: {
         price: price !== '' ? parseInt(price, 10) : 0,
         name: searchQuery,
@@ -56,7 +56,7 @@ const CourseScreen = ({ navigation }) => {
   };
 
   const fetchCourses = async (pageNumber = 1, size = DEFAULT_SIZE) => {
-    const response = await get(`${BASE_URL}/courses`, {
+    const response = await get(`${API_URL}/courses`, {
       params: {
         pageNumber: pageNumber,
         size: size,

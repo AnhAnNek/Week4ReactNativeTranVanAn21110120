@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator, TouchableOp
 import Icon from 'react-native-vector-icons/FontAwesome';
 import axios from 'axios'; // Để gọi API
 import { getToken } from '../utils/authUtils'; // Hàm lấy token
-import { BASE_URL } from '../utils/constants'; // URL API
+import {API_URL} from '../utils/constants'; // URL API
 
 // Component quảng cáo
 const PromotionBanner = () => {
@@ -52,7 +52,7 @@ const CourseList = ({ navigation }) => {
         const fetchCourses = async () => {
             try {
                 const tokenStr = await getToken(); // Lấy token
-                const response = await axios.get(`${BASE_URL}/courses/top-10-sales`, {
+                const response = await axios.get(`${API_URL}/courses/top-10-sales`, {
                     headers: {
                         Authorization: `Bearer ${tokenStr}`,
                     },

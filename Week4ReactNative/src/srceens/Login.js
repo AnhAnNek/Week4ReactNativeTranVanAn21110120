@@ -6,7 +6,7 @@ import {post} from '../utils/httpRequest';
 import {isLoggedIn, removeToken} from '../utils/authUtils';
 
 function Login({navigation}) {
-  const [username, setUsername] = useState('vananne');
+  const [username, setUsername] = useState('vanan');
   const [password, setPassword] = useState('P@123456');
   const [loading, setLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
