@@ -6,10 +6,12 @@ import { getToken, removeToken } from '../utils/authUtils';
 import { get } from '../utils/httpRequest';
 import tw from 'twrnc';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons'; // Or any other icon library you're using
+import { Ionicons } from '@expo/vector-icons';
 import CourseScreen from './Course';
 import UpdateProfile from './UpdateProfile';
 import BestSale from './BestSale';
+
+
 function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -105,10 +107,6 @@ export default function Home() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-
-          // if (route.name === 'Home') {
-          //   iconName = focused ? 'home' : 'home-outline';
-          // } else 
           if (route.name === 'UpdateProfile') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Course') {
@@ -118,14 +116,11 @@ export default function Home() {
             iconName = focused ? 'home' : 'home-outline';
           }
 
-
-          // Return any icon component from your icon library
           return <Ionicons name={iconName} size={size} color={color} />;
         },
         tabBarActiveTintColor: 'tomato',
         tabBarInactiveTintColor: 'gray',
       })}>
-      {/* <Tab.Screen name="Home" component={HomeScreen} /> */}
       <Tab.Screen name="Home" component={BestSale} />
       <Tab.Screen name="Course" component={CourseScreen} />
       <Tab.Screen name="UpdateProfile" component={UpdateProfile} />

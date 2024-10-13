@@ -1,31 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome';
-import axios from 'axios'; // Để gọi API
-import { getToken } from '../utils/authUtils'; // Hàm lấy token
-import {API_URL} from '../utils/constants'; // URL API
-
-// Component quảng cáo
-const PromotionBanner = () => {
-    return (
-        <View style={styles.promotionBanner}>
-            <Image
-                source={{ uri: 'https://www.shutterstock.com/image-photo/education-technology-ai-artificial-intelligence-600nw-2496843175.jpg' }} // Thay bằng link hình ảnh của bạn
-                style={styles.promotionImage}
-            />
-            <View style={styles.promotionContent}>
-                <Text style={styles.promotionTitle}>Top 10 best course</Text>
-            </View>
-        </View>
-    );
-};
+import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
+import courseService from '../services/courseService'; 
+import { errorToast } from '../utils/methods'; 
 
 const CourseCard = ({ course, onPress }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             <View style={styles.courseCard}>
                 <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
-                {/* Đảm bảo bao bọc văn bản trong <Text> */}
                 <Text style={styles.courseTitle}>{course.title}</Text>
                 <Text style={styles.instructorText}>{course.createdBy}</Text>
                 <Text style={styles.instructorText}>Số học viên: {course.countSale}</Text>
@@ -34,10 +16,7 @@ const CourseCard = ({ course, onPress }) => {
                     <Text style={styles.originalPriceText}>{course.originalPrice} đ</Text>
                 </View>
                 {course.bestSeller && (
-                    <TouchableOpacity onPress={onPress}>
-                        {/* Đảm bảo bao bọc văn bản "Bán chạy nhất" trong <Text> */}
-                        <Text style={styles.bestSeller}>Bán chạy nhất</Text>
-                    </TouchableOpacity>
+                    <Text style={styles.bestSeller}>Bán chạy nhất</Text>
                 )}
             </View>
         </TouchableOpacity>
@@ -45,49 +24,54 @@ const CourseCard = ({ course, onPress }) => {
 };
 
 const CourseList = ({ navigation }) => {
-    const [courses, setCourses] = useState([]); // State để lưu danh sách khóa học
-    const [loading, setLoading] = useState(true); // State để quản lý trạng thái loading
+    const [bestSellerCourses, setBestSellerCourses] = useState([]);
+    const [newCourses, setNewCourses] = useState([]);
+    const [oldCourses, setOldCourses] = useState([]);
+    const [highRatedCourses, setHighRatedCourses] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchCourses = async () => {
             try {
-                const tokenStr = await getToken(); // Lấy token
-                const response = await axios.get(`${API_URL}/course/top-10-sales`, {
-                    headers: {
-                        Authorization: `Bearer ${tokenStr}`,
-                    },
-                });
-                setCourses(response.data); // Lưu dữ liệu API vào state
-                setLoading(false);
+                const [bestSellers, newCoursesData, oldCoursesData, highRated] = await Promise.all([
+                    courseService.getCourse({ type: 'bestSeller' }),
+                    courseService.getCourse({ type: 'new' }),
+                    courseService.getCourse({ type: 'old' }),
+                    courseService.getCourse({ type: 'highRated' }),
+                ]);
+
+                setBestSellerCourses(bestSellers);
+                setNewCourses(newCoursesData);
+                setOldCourses(oldCoursesData);
+                setHighRatedCourses(highRated);
             } catch (error) {
-                console.error('Error fetching courses:', error);
+                console.error('Error fetching courses:', error.message);
+                errorToast('Không thể tải danh sách khóa học');
+            } finally {
                 setLoading(false);
             }
         };
 
-        fetchCourses(); // Gọi API khi component được render
+        fetchCourses();
     }, []);
 
     if (loading) {
-        return <ActivityIndicator size="large" color="#0000ff" />; // Hiển thị khi đang tải
+        return <ActivityIndicator size="large" color="#0000ff" />;
     }
 
     const goToCourseDetail = (course) => {
-        navigation.navigate('CourseDetail', { course }); // Điều hướng tới trang chi tiết
+        navigation.navigate('CourseDetail', { course });
     };
 
-    return (
-        <View>
-            {/* Thêm banner quảng cáo ở trên */}
-            <PromotionBanner />
-
-            {/* Danh sách khóa học */}
+    const renderCourseList = (title, data) => (
+        <View style={styles.courseSection}>
+            <Text style={styles.sectionTitle}>{title}</Text>
             <FlatList
-                data={courses}
+                data={data}
                 renderItem={({ item }) => (
                     <CourseCard
                         course={item}
-                        onPress={() => goToCourseDetail(item)} // Truyền sự kiện onPress để điều hướng
+                        onPress={() => goToCourseDetail(item)}
                     />
                 )}
                 keyExtractor={(item) => item.id.toString()}
@@ -96,30 +80,25 @@ const CourseList = ({ navigation }) => {
             />
         </View>
     );
+
+    return (
+        <ScrollView>
+            {renderCourseList("Bán chạy nhất", bestSellerCourses)}
+            {renderCourseList("Khóa học mới", newCourses)}
+            {renderCourseList("Khóa học cũ", oldCourses)}
+            {renderCourseList("Đánh giá cao", highRatedCourses)}
+        </ScrollView>
+    );
 };
 
 const styles = StyleSheet.create({
-    promotionBanner: {
-        backgroundColor: '#000',
-        padding: 20,
-        alignItems: 'center',
+    courseSection: {
         marginBottom: 20,
     },
-    promotionImage: {
-        width: '100%',
-        height: 200,
-        resizeMode: 'cover',
-    },
-    promotionContent: {
-        padding: 10,
-        alignItems: 'center',
-    },
-    promotionTitle: {
-        fontSize: 24,
+    sectionTitle: {
+        fontSize: 18,
         fontWeight: 'bold',
-        color: '#fff',
-        textAlign: 'center',
-        marginTop: 10,
+        marginVertical: 10,
     },
     courseCard: {
         width: 250,

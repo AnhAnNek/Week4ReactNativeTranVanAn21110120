@@ -1,26 +1,65 @@
-import React, { useState } from 'react';
-import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-
+import sectionService from '../services/sectionService';
+import lessonService from '../services/lessonService';
+import { errorToast } from '../utils/methods';
+import Review from './Review';
 const CourseDetail = ({ route }) => {
     const { course } = route.params;
-    const [expandedSections, setExpandedSections] = useState([]); // State to track expanded sections
+    const [sections, setSections] = useState([]);
+    const [expandedSections, setExpandedSections] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [lessons, setLessons] = useState({});
 
-    // Toggle section visibility
-    const toggleSection = (sectionId) => {
-        setExpandedSections((prevExpandedSections) =>
-            prevExpandedSections.includes(sectionId)
-                ? prevExpandedSections.filter(id => id !== sectionId)
-                : [...prevExpandedSections, sectionId]
-        );
+    useEffect(() => {
+        const fetchSections = async () => {
+            try {
+                const sectionData = await sectionService.getAllSectionByCourse({ courseId: course.id });
+                if (sectionData) {
+                    setSections(sectionData);
+                } else {
+                    errorToast('Không thể tải danh sách phần học');
+                }
+            } catch (error) {
+                console.error('Error fetching sections:', error.message);
+                errorToast('Có lỗi xảy ra');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSections();
+    }, [course.id]);
+
+    const toggleSection = async (sectionId) => {
+        if (expandedSections.includes(sectionId)) {
+            setExpandedSections(expandedSections.filter(id => id !== sectionId));
+        } else {
+            setExpandedSections([...expandedSections, sectionId]);
+            if (!lessons[sectionId]) {
+                try {
+                    const lessonData = await lessonService.getAllLessonBySection({ sectionId });
+                    if (lessonData) {
+                        setLessons(prevLessons => ({ ...prevLessons, [sectionId]: lessonData }));
+                    } else {
+                        errorToast('Không thể tải danh sách bài học');
+                    }
+                } catch (error) {
+                    console.error('Error fetching lessons:', error.message);
+                    errorToast('Có lỗi xảy ra khi tải bài học');
+                }
+            }
+        }
     };
+
+    if (loading) {
+        return <ActivityIndicator size="large" color="#0000ff" />;
+    }
 
     return (
         <ScrollView style={styles.container}>
-            {/* Course Image */}
             <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
 
-            {/* Course Information */}
             <View style={styles.courseInfo}>
                 <Text style={styles.courseTitle}>{course.title}</Text>
                 <Text style={styles.courseInstructor}>Người tạo: {course.createdBy}</Text>
@@ -28,8 +67,7 @@ const CourseDetail = ({ route }) => {
                 <Text style={styles.courseDescription}>{course.description}</Text>
             </View>
 
-            {/* Sections and Lessons */}
-            {course.sections.map((section, sectionIndex) => (
+            {sections.map((section, sectionIndex) => (
                 <View key={section.id} style={styles.sectionContainer}>
                     <TouchableOpacity onPress={() => toggleSection(section.id)} style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>
@@ -42,10 +80,9 @@ const CourseDetail = ({ route }) => {
                         />
                     </TouchableOpacity>
 
-                    {/* Conditionally render lessons if the section is expanded */}
                     {expandedSections.includes(section.id) && (
                         <View style={styles.lessonList}>
-                            {section.lessons.map((lesson, lessonIndex) => (
+                            {lessons[section.id]?.map((lesson, lessonIndex) => (
                                 <View key={lesson.id} style={styles.lessonItem}>
                                     <Text style={styles.lessonIndex}>{lessonIndex + 1}</Text>
                                     <View style={styles.lessonDetails}>
@@ -61,11 +98,12 @@ const CourseDetail = ({ route }) => {
                     )}
                 </View>
             ))}
+            <Review courseId={course.id} />
 
-            {/* Purchase Button */}
             <TouchableOpacity style={styles.purchaseButton}>
                 <Text style={styles.purchaseButtonText}>Mua ngay</Text>
             </TouchableOpacity>
+            
         </ScrollView>
     );
 };

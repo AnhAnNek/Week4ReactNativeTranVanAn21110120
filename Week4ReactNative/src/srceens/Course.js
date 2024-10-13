@@ -13,69 +13,43 @@ import {
   Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
-import { get } from '../utils/httpRequest';
-import {API_URL, BASE_URL} from '../utils/constants';
+import courseService from '../services/courseService';
 
 const DEFAULT_SIZE = 8;
 
 const CourseScreen = ({ navigation }) => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [price, setPrice] = useState(''); // Initialize as a string to handle input
+  const [price, setPrice] = useState('');
   const [loading, setLoading] = useState(false);
   const [pageNumber, setPageNumber] = useState(1);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchFilteredCourses = async (pageNumber = 1) => {
-    const response = await get(`${API_URL}/course/filter`, {
-      params: {
-        price: price !== '' ? parseInt(price, 10) : 0,
-        name: searchQuery,
-        pageNumber: pageNumber,
-        size: DEFAULT_SIZE,
-      },
-    });
-    const newCourses = response.data;
-    console.log('Filtered courses size: ' + newCourses.length);
-    return newCourses;
-  };
-
   const loadFilteredCourses = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const newCourses = await fetchFilteredCourses(pageNumber);
-
+      const newCourses = await courseService.getCourseByTopic({ topicId: 1 });
       setHasMore(newCourses.length >= DEFAULT_SIZE);
       setCourses(newCourses);
-      setPageNumber(pageNumber); // Reset page number to the new value
+      setPageNumber(pageNumber);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error('Error fetching filtered courses:', error.message);
+      ToastAndroid.show('Không thể tải danh sách khóa học', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchCourses = async (pageNumber = 1, size = DEFAULT_SIZE) => {
-    const response = await get(`${API_URL}/course`, {
-      params: {
-        pageNumber: pageNumber,
-        size: size,
-      },
-    });
-    const newCourses = response.data;
-    console.log('Courses size: ' + newCourses.length);
-    return newCourses;
-  };
-
   const initCourses = async () => {
     setLoading(true);
     try {
-      const newCourses = await fetchCourses(1);
+      const newCourses = await courseService.getCourse({ type: 'new' });
       setHasMore(newCourses.length >= DEFAULT_SIZE);
       setCourses(newCourses);
-      setPageNumber(1); // Reset page number during initialization
+      setPageNumber(1);
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      console.error('Error fetching courses:', error.message);
+      ToastAndroid.show('Không thể tải danh sách khóa học', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
@@ -108,9 +82,9 @@ const CourseScreen = ({ navigation }) => {
       let newCourses = [];
 
       if (!searchQuery && price === '') {
-        newCourses = await fetchCourses(page);
+        newCourses = await courseService.fetchCourses(page);
       } else {
-        newCourses = await fetchFilteredCourses(page);
+        newCourses = await courseService.fetchFilteredCourses(searchQuery, price, page);
       }
 
       setHasMore(newCourses.length >= DEFAULT_SIZE);
@@ -121,9 +95,10 @@ const CourseScreen = ({ navigation }) => {
             !prevCourses.some((prevCourse) => prevCourse.id === newCourse.id)
         ),
       ]);
-      setPageNumber(page); // Increment page number
+      setPageNumber(page);
     } catch (error) {
-      console.error('Error loading more courses:', error);
+      console.error('Error loading more courses:', error.message);
+      ToastAndroid.show('Không thể tải thêm khóa học', ToastAndroid.SHORT);
     } finally {
       setLoading(false);
     }
@@ -137,7 +112,7 @@ const CourseScreen = ({ navigation }) => {
   };
 
   const filterCourses = () => {
-    setPageNumber(1); // Reset page number when filtering
+    setPageNumber(1);
     loadFilteredCourses(1);
   };
 
@@ -186,7 +161,7 @@ const CourseScreen = ({ navigation }) => {
       <FlatList
         data={courses}
         renderItem={renderCourseItem}
-        keyExtractor={(item, index) => `${item.id}_${index}`}
+        keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.courseList}
         onEndReached={loadMoreCourses}
         onEndReachedThreshold={0.5}
