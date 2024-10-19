@@ -37,8 +37,10 @@
     "react-native-screens": "^3.34.0",
     "react-native-toast-message": "^2.2.1",
     "react-native-vector-icons": "^10.2.0",
+    "react-native-video": "^6.7.0",
     "react-native-web": "~0.19.10",
-    "twrnc": "^4.5.1"
+    "twrnc": "^4.5.1",
+    "expo-av": "~14.0.7"
   },
   "devDependencies": {
     "@babel/core": "7.24.8",

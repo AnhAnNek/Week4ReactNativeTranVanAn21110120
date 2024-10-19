@@ -14,6 +14,9 @@ import CourseDetail from './src/srceens/CourseDetail';
 import Cart from "./src/srceens/Cart";
 import Toast from "react-native-toast-message";
 import Orders from "./src/srceens/Orders";
+import PlayCourse from './src/srceens/PlayCourse';
+import MyLearning from './src/srceens/MyLearn';
+
 const Stack = createStackNavigator();
 
 function App() {
@@ -31,6 +34,8 @@ function App() {
         <Stack.Screen name="CourseDetail" component={CourseDetail} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="Orders" component={Orders} />
+        <Stack.Screen name="PlayCourse" component={PlayCourse} />
+        <Stack.Screen name="MyLearning" component={MyLearning} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

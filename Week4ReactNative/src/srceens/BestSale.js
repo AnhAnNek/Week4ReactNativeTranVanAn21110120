@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, ActivityIndicator, TouchableOpacity, ScrollView } from 'react-native';
-import courseService from '../services/courseService'; 
-import { errorToast } from '../utils/methods'; 
+import courseService from '../services/courseService';
+import { errorToast } from '../utils/methods';
 
 const CourseCard = ({ course, onPress }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             <View style={styles.courseCard}>
-                <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
+                <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
                 <Text style={styles.courseTitle}>{course.title}</Text>
                 <Text style={styles.instructorText}>{course.createdBy}</Text>
                 <Text style={styles.instructorText}>Số học viên: {course.countSale}</Text>

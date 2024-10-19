@@ -58,7 +58,7 @@ const CourseDetail = ({ route }) => {
 
     return (
         <ScrollView style={styles.container}>
-            <Image source={{ uri: course.imageUrl }} style={styles.courseImage} />
+            <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
 
             <View style={styles.courseInfo}>
                 <Text style={styles.courseTitle}>{course.title}</Text>

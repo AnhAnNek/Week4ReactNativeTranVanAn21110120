@@ -119,7 +119,7 @@ const CourseScreen = ({ navigation }) => {
   const renderCourseItem = ({ item }) => (
     <TouchableOpacity onPress={() => goToCourseDetail(item)}>
       <View style={styles.courseItem}>
-        <Image source={{ uri: item.imageUrl }} style={styles.courseImage} />
+        <Image source={{ uri: item.imagePreview }} style={styles.courseImage} />
         <View style={styles.courseDetails}>
           <Text style={styles.courseTitle}>{item.title}</Text>
           <Text style={styles.courseInstructor}>{item.createdBy}</Text>

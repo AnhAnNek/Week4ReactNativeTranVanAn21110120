@@ -10,7 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 import CourseScreen from './Course';
 import UpdateProfile from './UpdateProfile';
 import BestSale from './BestSale';
-
+import MyLearn from './MyLearn';
+import Wishlist from './Wishlist';
 
 function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -115,6 +116,12 @@ export default function Home() {
           else if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
           }
+          else if (route.name === 'MyLearn') {
+            iconName = focused ? 'play' : 'play-outline';
+          }
+          else if (route.name === 'Wishlist') {
+            iconName = focused ? 'heart' : 'heart-outline';
+          }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -123,6 +130,8 @@ export default function Home() {
       })}>
       <Tab.Screen name="Home" component={BestSale} />
       <Tab.Screen name="Course" component={CourseScreen} />
+      <Tab.Screen name="MyLearn" component={MyLearn} />
+      <Tab.Screen name="Wishlist" component={Wishlist} />
       <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
 
     </Tab.Navigator>
