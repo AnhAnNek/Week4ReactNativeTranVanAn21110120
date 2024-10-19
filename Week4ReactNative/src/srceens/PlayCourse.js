@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
     View,
     Text,
@@ -7,83 +7,102 @@ import {
     ScrollView,
     Dimensions,
     TouchableOpacity,
+    ActivityIndicator,
 } from 'react-native';
-import { Video } from 'expo-av';  // Sử dụng Video từ expo-av
+import { Video } from 'expo-av';
+import sectionService from '../services/sectionService'; // Import section service
+import lessonService from '../services/lessonService'; // Import lesson service
 
-// Dữ liệu giả lập cho các bài giảng theo section
-const sections = [
-    {
-        id: '1',
-        sectionTitle: 'Section 1 - Introduction to IELTS',
-        lessons: [
-            { id: '1', title: 'Why Join this Course?', duration: '01:30 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '2', title: 'Introduction to IELTS', duration: '03:40 mins remaining', videoUrl: 'https://res.cloudinary.com/dnvfrgxjt/video/upload/v1729304123/jpkpvcnbivvqdxetfo5w.mp4' },
-            { id: '3', title: 'IELTS Test Format Overview', duration: '02:20 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-        ],
-    },
-    {
-        id: '2',
-        sectionTitle: 'Section 2 - Listening Module',
-        lessons: [
-            { id: '4', title: 'Listening Test Overview', duration: '02:45 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '5', title: 'Question Types in Listening', duration: '03:12 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '6', title: 'Tips for Improving Listening Skills', duration: '02:30 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '7', title: 'Practice Listening Test', duration: '04:10 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-        ],
-    },
-    {
-        id: '3',
-        sectionTitle: 'Section 3 - Reading Module',
-        lessons: [
-            { id: '8', title: 'Reading Test Overview', duration: '02:35 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '9', title: 'Question Types in Reading', duration: '03:05 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-            { id: '10', title: 'Reading Strategies and Tips', duration: '02:50 mins remaining', videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4' },
-        ],
-    },
-];
+const PlayCourse = ({ route }) => {
+    const { courseId } = route.params; // Assume courseId is passed as a prop
+    const [sections, setSections] = useState([]);
+    const [selectedLesson, setSelectedLesson] = useState(null);
+    const [loading, setLoading] = useState(true);
 
-// Component để hiển thị từng bài giảng
-const LessonItem = ({ lesson, onPress }) => (
-    <TouchableOpacity onPress={onPress}>
-        <View style={styles.lessonContainer}>
-            <Text style={styles.lessonTitle}>{lesson.title}</Text>
-            <Text style={styles.lessonDuration}>Video - {lesson.duration}</Text>
-        </View>
-    </TouchableOpacity>
-);
+    // Fetch sections and lessons based on the courseId
+    const fetchSectionsAndLessons = async () => {
+        try {
+            setLoading(true);
 
-// Component chính
-const PlayCourse = () => {
-    const [selectedLesson, setSelectedLesson] = useState(sections[0].lessons[0]);
+            // Fetch sections of the course
+            const sectionRequest = { courseId };
+            const fetchedSections = await sectionService.getAllSectionByCourse(sectionRequest);
+
+            if (fetchedSections) {
+                const sectionsWithLessons = await Promise.all(
+                    fetchedSections.map(async (section) => {
+                        // Fetch lessons for each section
+                        const lessonRequest = { sectionId: section.id };
+                        const fetchedLessons = await lessonService.getAllLessonBySection(lessonRequest);
+                        return {
+                            ...section,
+                            lessons: fetchedLessons || [], // Attach lessons to the section
+                        };
+                    })
+                );
+
+                setSections(sectionsWithLessons);
+
+                // Set the first lesson as the default selected lesson
+                if (sectionsWithLessons.length > 0 && sectionsWithLessons[0].lessons.length > 0) {
+                    setSelectedLesson(sectionsWithLessons[0].lessons[0]);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching sections and lessons:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchSectionsAndLessons();
+    }, [courseId]);
+
+    const LessonItem = ({ lesson, onPress }) => (
+        <TouchableOpacity onPress={onPress}>
+            <View style={styles.lessonContainer}>
+                <Text style={styles.lessonTitle}>{lesson.title}</Text>
+                <Text style={styles.lessonDuration}>Video - {lesson.duration} mins</Text>
+            </View>
+        </TouchableOpacity>
+    );
+
+    if (loading) {
+        return (
+            <View style={styles.loaderContainer}>
+                <ActivityIndicator size="large" color="#0000ff" />
+            </View>
+        );
+    }
 
     return (
         <View style={styles.container}>
-            {/* Video của bài học hiện tại */}
-            <View style={styles.fixedVideoContainer}>
-                <Video
-                    source={{ uri: selectedLesson.videoUrl }}
-                    style={styles.video}
-                    useNativeControls  // Hiển thị các điều khiển video
-                    resizeMode="contain"
-                    isLooping
-                />
-                <Text style={styles.currentLessonTitle}>{selectedLesson.title}</Text>
-            </View>
+            {/* Video of the selected lesson */}
+            {selectedLesson && (
+                <View style={styles.fixedVideoContainer}>
+                    <Video
+                        source={{ uri: selectedLesson.contentUrl }}
+                        style={styles.video}
+                        useNativeControls
+                        resizeMode="contain"
+                        isLooping
+                    />
+                    <Text style={styles.currentLessonTitle}>{selectedLesson.title}</Text>
+                </View>
+            )}
 
-            {/* Danh sách bài giảng */}
+            {/* List of sections and lessons */}
             <ScrollView style={styles.lessonList}>
                 {sections.map((section) => (
                     <View key={section.id}>
-                        <Text style={styles.sectionTitle}>{section.sectionTitle}</Text>
+                        <Text style={styles.sectionTitle}>{section.title}</Text>
                         <FlatList
                             data={section.lessons}
                             renderItem={({ item }) => (
-                                <LessonItem
-                                    lesson={item}
-                                    onPress={() => setSelectedLesson(item)}
-                                />
+                                <LessonItem lesson={item} onPress={() => setSelectedLesson(item)} />
                             )}
-                            keyExtractor={(item) => item.id}
+                            keyExtractor={(item) => item.id.toString()}
                         />
                     </View>
                 ))}
@@ -97,6 +116,11 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#fff',
     },
+    loaderContainer: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     fixedVideoContainer: {
         marginTop: 15,
         position: 'absolute',
@@ -106,7 +130,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#000',
         justifyContent: 'center',
         alignItems: 'center',
-        zIndex: 1, // Đảm bảo video ở trên các thành phần khác
+        zIndex: 1,
     },
     video: {
         width: '100%',
@@ -121,7 +145,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     lessonList: {
-        marginTop: Dimensions.get('window').width * 0.56 + 40, // Đảm bảo danh sách không bị video đè lên
+        marginTop: Dimensions.get('window').width * 0.56 + 40,
     },
     sectionTitle: {
         fontSize: 14,

@@ -1,38 +1,14 @@
-import React from 'react';
-import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Sử dụng FontAwesome cho icon ngôi sao
+import React, { useEffect, useState } from 'react';
+import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import Icon from 'react-native-vector-icons/FontAwesome'; // For FontAwesome icons
+import courseService from '../services/courseService'; // Import the API service
 
-// Dữ liệu giả lập của các khóa học
-const courses = [
-  {
-    id: '1',
-    title: 'The Complete Python Bootcamp From Zero to Hero in Python',
-    instructor: 'Jose Portilla, Pierian Training',
-    rating: 4.6,
-    reviews: 519983,
-    price: '1.499.000 ₫',
-    image: 'https://img-c.udemycdn.com/course/240x135/567828_67d0.jpg',
-    bestseller: false,
-  },
-  {
-    id: '2',
-    title: '100 Days of Code: The Complete Python Pro Bootcamp',
-    instructor: 'Dr. Angela Yu, Developer and Lead Instructor',
-    rating: 4.7,
-    reviews: 328913,
-    price: '2.299.000 ₫',
-    image: 'https://img-c.udemycdn.com/course/240x135/2776760_f176_10.jpg',
-    bestseller: true,
-  },
-];
-
-// Component để hiển thị ngôi sao đánh giá
+// Component to display the star rating
 const Rating = ({ rating }) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 !== 0;
   const stars = [];
 
-  // Lặp qua để tạo icon ngôi sao
   for (let i = 0; i < fullStars; i++) {
     stars.push(<Icon key={`full-${i}`} name="star" size={16} color="#f5a623" />);
   }
@@ -46,21 +22,21 @@ const Rating = ({ rating }) => {
   return <View style={styles.ratingContainer}>{stars}</View>;
 };
 
-// Component để render mỗi khóa học
+// Component to render each course
 const CourseItem = ({ course }) => {
   return (
     <View style={styles.courseContainer}>
-      <Image source={{ uri: course.image }} style={styles.courseImage} />
+      <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
       <View style={styles.courseInfo}>
         <Text style={styles.courseTitle}>{course.title}</Text>
-        <Text style={styles.courseInstructor}>{course.instructor}</Text>
+        <Text style={styles.courseInstructor}>{course.teacher}</Text>
         <View style={styles.ratingRow}>
           <Text style={styles.courseRating}>{course.rating}</Text>
           <Rating rating={course.rating} />
-          <Text style={styles.courseReviews}>({course.reviews})</Text>
+          <Text style={styles.courseReviews}>({course.ratingCount})</Text>
         </View>
-        <Text style={styles.coursePrice}>{course.price}</Text>
-        {course.bestseller && (
+        <Text style={styles.coursePrice}>{`${course.realPrice} ₫`}</Text>
+        {course.isBestseller && (
           <TouchableOpacity style={styles.bestsellerBadge}>
             <Text style={styles.bestsellerText}>Bestseller</Text>
           </TouchableOpacity>
@@ -70,14 +46,43 @@ const CourseItem = ({ course }) => {
   );
 };
 
-// Component chính
+// Main Wishlist component
 const Wishlist = () => {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch courses from the API
+  const fetchCourses = async () => {
+    try {
+      const courseRequest = { createdBy: 'hungsam' }; // Example request data
+      const fetchedCourses = await courseService.getAllCourseFavouriteOfStudent(courseRequest);
+      setCourses(fetchedCourses || []); // Fallback to an empty array if no data
+    } catch (error) {
+      console.error('Error fetching courses:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCourses();
+  }, []);
+
+  // Show loading spinner while fetching data
+  if (loading) {
+    return (
+      <View style={styles.loaderContainer}>
+        <ActivityIndicator size="large" color="#0000ff" />
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <FlatList
         data={courses}
         renderItem={({ item }) => <CourseItem course={item} />}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.id.toString()}
       />
     </View>
   );
@@ -147,6 +152,11 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: 'bold',
     color: '#333',
+  },
+  loaderContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 

@@ -46,12 +46,35 @@ const getCourseByListCategory = async (courseRequest) => {
     return response.data.content;
 }
 
+const getAllCourseOfStudent = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/get-all-course-of-student`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
+
+const getAllCourseFavouriteOfStudent = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/get-all-course-favorite-of-student`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
 
 const courseService = {
     getCourse,
     getCourseByTopic,
     getCourseByLevel,
-    getCourseByListCategory
+    getCourseByListCategory,
+    getAllCourseOfStudent,
+    getAllCourseFavouriteOfStudent
 }
 
 export default courseService;
