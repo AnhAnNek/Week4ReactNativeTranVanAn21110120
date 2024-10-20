@@ -1,25 +1,20 @@
 import { getToken, isLoggedIn, removeToken, saveToken } from '../utils/authUtils';
-import { get, post, put } from '../utils/httpRequest';
+import {get, handleResponse, post, put} from '../utils/httpRequest';
 
 const SUFFIX_AUTH_API_URL = '/auth';
 
 const getCurUser = async () => {
-  if (!isLoggedIn()) {
+  const isSignedIn = await isLoggedIn();
+  if (!isSignedIn) {
     return null;
   }
 
   const path = `${SUFFIX_AUTH_API_URL}/get-user-by-token`;
-  const tokenStr = getToken();
+  const tokenStr = await getToken();
   const response = await get(path, {
     params: { tokenStr }
   });
-
-  if (response?.status !== 200) {
-    return null;
-  }
-
-  const user = response.data;
-  return user;
+  return handleResponse(response, 200);
 };
 
 const login = async (loginRequest) => {
@@ -31,7 +26,7 @@ const login = async (loginRequest) => {
   }
 
   const loginResponse = await response.data;
-  saveToken(loginResponse?.tokenStr);
+  await saveToken(loginResponse?.tokenStr);
   return loginResponse;
 };
 
@@ -39,11 +34,7 @@ const register = async (registerRequest) => {
   const path = `${SUFFIX_AUTH_API_URL}/register`;
   const response = await post(path, registerRequest);
 
-  if (response?.status !== 201) {
-    return null;
-  }
-
-  return response.data;
+  return handleResponse(response, 200);
 };
 
 const logout = async () => {
@@ -55,7 +46,7 @@ const logout = async () => {
     return true;
   }
 
-  removeToken();
+  await removeToken();
   console.log('Logout successfully');
   return false;
 };
@@ -63,23 +54,13 @@ const logout = async () => {
 const activeAccount = async (activeAccountRequest) => {
   const path = `${SUFFIX_AUTH_API_URL}/active-account`;
   const response = await put(path, activeAccountRequest);
-
-  if (response?.status !== 200) {
-    return null;
-  }
-
-  return response.data;
+  return handleResponse(response, 200);
 }
 
 const resendOTPToActiveAccount = async (username) => {
   const path = `${SUFFIX_AUTH_API_URL}/resend-otp-to-active-account/${username}`;
   const response = await post(path);
-
-  if (response?.status !== 200) {
-    return null;
-  }
-
-  return response.data;
+  return handleResponse(response, 200);
 }
 
 const AuthService = {

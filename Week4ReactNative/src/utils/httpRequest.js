@@ -70,3 +70,8 @@ export const put = async (path, data, options = {}) => {
     throw new Error(errorMsg);
   }
 };
+
+
+export const handleResponse = (response, successCode) => {
+  return response?.status === successCode ? response.data : null;
+};

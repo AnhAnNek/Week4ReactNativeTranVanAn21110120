@@ -16,8 +16,10 @@ import Toast from "react-native-toast-message";
 import Orders from "./src/srceens/Orders";
 import PlayCourse from './src/srceens/PlayCourse';
 import MyLearning from './src/srceens/MyLearn';
+import {LogBox} from "react-native";
 
 const Stack = createStackNavigator();
+LogBox.ignoreAllLogs();
 
 function App() {
   return (
