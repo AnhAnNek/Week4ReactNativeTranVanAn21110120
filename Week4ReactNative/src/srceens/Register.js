@@ -1,18 +1,21 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import {
-  Platform,
   SafeAreaView,
-  StyleSheet,
+  ScrollView,
+  Text,
+  TextInput,
   TouchableOpacity,
   View,
+  StyleSheet,
+  Platform,
 } from 'react-native';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {API_URL} from '../utils/constants';
-import {Picker} from '@react-native-picker/picker';
-import {post} from '../utils/httpRequest';
+import DropDownPicker from 'react-native-dropdown-picker'; // Sử dụng DropDownPicker giống Profile
+import { Button, Snackbar } from 'react-native-paper';
+import { API_URL } from '../utils/constants';
+import { post } from '../utils/httpRequest';
 
-function Register({navigation}) {
+function Register({ navigation }) {
   const [username, setUsername] = useState('vananne');
   const [password, setPassword] = useState('P@123456');
   const [fullName, setFullName] = useState('Van An');
@@ -23,8 +26,16 @@ function Register({navigation}) {
   const [dobPickerVisible, setDobPickerVisible] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [loading, setLoading] = useState(false); // Để hiển thị trạng thái tải
+  const [open, setOpen] = useState(false);
+  const [sexOptions, setSexOptions] = useState([
+    { label: 'Male', value: 'MALE' },
+    { label: 'Female', value: 'FEMALE' },
+    { label: 'Other', value: 'OTHER' },
+  ]);
 
   const handleRegister = async () => {
+    setLoading(true);
     const registerRequest = {
       username,
       password,
@@ -42,13 +53,14 @@ function Register({navigation}) {
         const message = response.data;
         setSnackbarMessage(message);
 
-        navigation.navigate('InputOtpToActiveAccount', {username});
+        navigation.navigate('InputOtpToActiveAccount', { username });
       }
     } catch (error) {
       console.log(error?.message);
       setSnackbarMessage(error.message);
     } finally {
       setSnackbarVisible(true);
+      setLoading(false); // Kết thúc trạng thái tải
     }
   };
 
@@ -62,117 +74,153 @@ function Register({navigation}) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Register</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          label="Username"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Full Name"
-          value={fullName}
-          onChangeText={setFullName}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Email"
-          value={email}
-          onChangeText={setEmail}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Phone Number"
-          value={phoneNumber}
-          onChangeText={setPhoneNumber}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <Picker
-          selectedValue={gender}
-          style={styles.input}
-          onValueChange={itemValue => setGender(itemValue)}>
-          <Picker.Item label="Male" value="MALE" />
-          <Picker.Item label="Female" value="FEMALE" />
-          <Picker.Item label="Other" value="OTHER" />
-        </Picker>
 
-        <TouchableOpacity onPress={() => setDobPickerVisible(true)}>
-          <TextInput
-            label="Date of Birth (YYYY-MM-DD)"
-            value={dob}
-            style={styles.input}
-            editable={false}
-          />
-        </TouchableOpacity>
+      {/* Username */}
+      <Text style={styles.label}>Username</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
 
-        {dobPickerVisible && (
-          <DateTimePicker
-            value={new Date()}
-            mode="date"
-            display="default"
-            onChange={onDobChange}
-            maximumDate={new Date()}
-          />
-        )}
+      {/* Password */}
+      <Text style={styles.label}>Password</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+      />
 
-        <Button mode="contained" onPress={handleRegister} style={styles.button}>
-          Register
-        </Button>
-        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-          <Text style={styles.loginText}>
-            Already have an account? Login here
-          </Text>
-        </TouchableOpacity>
-      </View>
+      {/* Full Name */}
+      <Text style={styles.label}>Full Name</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter full name"
+        value={fullName}
+        onChangeText={setFullName}
+        autoCapitalize="none"
+      />
+
+      {/* Email */}
+      <Text style={styles.label}>Email</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter email"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+        keyboardType="email-address"
+      />
+
+      {/* Phone Number */}
+      <Text style={styles.label}>Phone Number</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Enter phone number"
+        value={phoneNumber}
+        onChangeText={setPhoneNumber}
+        autoCapitalize="none"
+        keyboardType="phone-pad"
+      />
+
+      {/* Gender (Dropdown Select) */}
+      <Text style={styles.label}>Gender</Text>
+      <DropDownPicker
+        open={open}
+        value={gender}
+        items={sexOptions}
+        setOpen={setOpen}
+        setValue={setGender}
+        setItems={setSexOptions}
+        placeholder="Select gender"
+        style={styles.dropdown}
+        dropDownContainerStyle={styles.dropdownContainer}
+      />
+
+      {/* Date of Birth */}
+      <Text style={styles.label}>Date of Birth</Text>
+      <TouchableOpacity onPress={() => setDobPickerVisible(true)} style={styles.input}>
+        <Text>{dob || 'Select Date'}</Text>
+      </TouchableOpacity>
+      {dobPickerVisible && (
+        <DateTimePicker
+          value={new Date(dob)}
+          mode="date"
+          display="default"
+          onChange={onDobChange}
+          maximumDate={new Date()}
+        />
+      )}
+
+      {/* Register Button */}
+      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Registering...' : 'Register'}</Text>
+      </TouchableOpacity>
+
+      {/* Snackbar for displaying messages */}
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}>
+        duration={3000}
+      >
         {snackbarMessage}
       </Snackbar>
-    </SafeAreaView>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     padding: 20,
-    justifyContent: 'center',
+    backgroundColor: '#fff',
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 20,
     textAlign: 'center',
-    marginBottom: 20,
   },
-  inputContainer: {
-    marginBottom: 20,
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
   },
   input: {
-    marginBottom: 10,
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+  },
+  dropdown: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  dropdownContainer: {
+    borderColor: '#ccc',
   },
   button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
     marginTop: 20,
   },
-  loginText: {
-    marginTop: 15,
-    textAlign: 'center',
-    color: 'blue',
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 });
 

@@ -1,113 +1,98 @@
-import React, {useState} from 'react';
-import {SafeAreaView, StyleSheet, View} from 'react-native';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {put} from '../utils/httpRequest';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
+import { API_URL } from '../utils/constants';
+import { put } from '../utils/httpRequest';
 
-const InputOtpToActiveAccount = ({route, navigation}) => {
-  const {username} = route.params;
+const InputOtpToActiveAccount = ({ route, navigation }) => {
+  const { username } = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
-
-  const handleOtpChange = text => {
-    setOtp(text);
-  };
 
   const handleSubmit = async () => {
     if (otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP.');
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
       return;
     }
 
     setLoading(true);
-    setSnackbarVisible(false);
     try {
-      const activeAccountRequest = {username, otp};
-      const response = await put(
-        `${API_URL}/auth/active-account`,
-        activeAccountRequest,
-      );
+      const activeAccountRequest = { username, otp };
+      const response = await put(`${API_URL}/auth/active-account`, activeAccountRequest);
 
       if (response.status === 200) {
-        const activeResponse = response.data;
-        setSnackbarMessage(activeResponse.message);
-        setSnackbarVisible(true);
-        setTimeout(() => {
-          navigation.navigate('Login');
-        }, 800);
+        Alert.alert('Success', 'Account activated successfully!');
+        navigation.navigate('Login');
       } else {
-        setError('Invalid OTP, please try again.');
+        Alert.alert('Error', 'Invalid OTP, please try again.');
       }
     } catch (error) {
-      console.log(error.message);
-      setError(error.message);
+      Alert.alert('Error', error?.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.label}>Enter OTP to Activate Account</Text>
-        <TextInput
-          label="OTP"
-          value={otp}
-          onChangeText={handleOtpChange}
-          keyboardType="numeric"
-          maxLength={6}
-          placeholder="Enter 6-digit OTP"
-          style={styles.input}
-          mode="outlined"
-        />
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={loading}
-          style={styles.button}>
-          Submit OTP
-        </Button>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        <Snackbar
-          visible={snackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          duration={3000}>
-          <Text>{snackbarMessage}</Text>
-        </Snackbar>
-      </View>
+    <SafeAreaView style={styles.formContainer}>
+      <Text style={styles.title}>Enter OTP to Activate Account</Text>
+      <Text style={styles.subtitle}>Please enter the OTP sent to your email</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Enter 6-digit OTP"
+        value={otp}
+        onChangeText={setOtp}
+        keyboardType="numeric"
+        maxLength={6}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Activating...' : 'Submit OTP'}</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  formContainer: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  content: {
+    backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
-  label: {
-    fontSize: 20,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    width: '100%',
-    marginBottom: 20,
+    width: '90%',
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
   button: {
-    width: '100%',
-    padding: 8,
+    width: '90%',
+    height: 50,
+    backgroundColor: '#00aaff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginBottom: 10,
   },
-  errorText: {
-    color: 'red',
-    marginTop: 10,
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 
