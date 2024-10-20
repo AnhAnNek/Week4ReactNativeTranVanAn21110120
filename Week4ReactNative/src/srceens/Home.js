@@ -7,10 +7,9 @@ import { get } from '../utils/httpRequest';
 import tw from 'twrnc';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
-import CourseScreen from './Course';
+import Search from './Search';
 import BestSale from './BestSale';
 import MyLearn from './MyLearn';
-import Wishlist from './Wishlist';
 import Account from './Account';
 import Notifications from "./Notifications";
 
@@ -117,14 +116,14 @@ export default function Home() {
           else if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
           }
-          else if (route.name === 'MyLearn') {
+          else if (route.name === 'My Learn') {
             iconName = focused ? 'play' : 'play-outline';
           }
           else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications' : 'notifications-outline';
           }
-          else if (route.name === 'Wishlist') {
-            iconName = focused ? 'heart' : 'heart-outline';
+          else if (route.name === 'Search') {
+            iconName = focused ? 'search' : 'search-outline';
           }
           else if (route.name === 'Account') {
             iconName = focused ? 'person' : 'person-outline';
@@ -136,10 +135,10 @@ export default function Home() {
         tabBarInactiveTintColor: 'gray',
       })}>
       <Tab.Screen name="Home" component={BestSale} />
-      <Tab.Screen name="Course" component={CourseScreen} />
-      <Tab.Screen name="MyLearn" component={MyLearn} />
+      <Tab.Screen name="Search" component={Search} />
+      <Tab.Screen name="My Learn" component={MyLearn} />
       <Tab.Screen name="Notifications" component={Notifications} />
-      <Tab.Screen name="Wishlist" component={Wishlist} />
+      {/* <Tab.Screen name="Wishlist" component={Wishlist} /> */}
       <Tab.Screen name="Account" component={Account} />
     </Tab.Navigator>
   );

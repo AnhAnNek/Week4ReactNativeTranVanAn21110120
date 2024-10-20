@@ -20,7 +20,6 @@ const ChangePassword = ({ navigation }) => {
 
   return (
     <View style={styles.formContainer}>
-      <Text style={styles.title}>Change Password</Text>
 
       <TextInput
         style={styles.input}

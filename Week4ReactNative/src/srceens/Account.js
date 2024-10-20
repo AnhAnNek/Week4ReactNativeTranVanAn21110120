@@ -12,11 +12,19 @@ const Account = ({ navigation }) => {
     };
 
     const handleHistory = () => {
-        // Xử lý sự kiện khi nhấn History
+        navigation.navigate('History');
     };
 
     const handleChangePassword = () => {
         navigation.navigate('ChangePassword');
+    };
+
+    const handleCart = () => {
+        navigation.navigate('Cart');
+    };
+
+    const handleFavorites = () => {
+        navigation.navigate('Wishlist');
     };
 
     const handleLogout = () => {
@@ -39,6 +47,16 @@ const Account = ({ navigation }) => {
                 <TouchableOpacity style={styles.optionItem} onPress={handleEditProfile}>
                     <Ionicons name="person-circle-outline" size={24} color="black" style={styles.icon} />
                     <Text style={styles.optionText}>Edit Profile</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.optionItem} onPress={handleCart}>
+                    <Ionicons name="cart-outline" size={24} color="black" style={styles.icon} />
+                    <Text style={styles.optionText}>Cart</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity style={styles.optionItem} onPress={handleFavorites}>
+                    <Ionicons name="heart-outline" size={24} color="black" style={styles.icon} />
+                    <Text style={styles.optionText}>Favorite</Text>
                 </TouchableOpacity>
 
                 <TouchableOpacity style={styles.optionItem} onPress={handleHistory}>

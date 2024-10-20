@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // Để sử dụng icon FontAwesome
-import courseService from '../services/courseService'; // Gọi API từ courseService
+import Icon from 'react-native-vector-icons/FontAwesome'; 
+import courseService from '../services/courseService'; 
 import IconR from 'react-native-vector-icons/Ionicons';
+import { useNavigation } from '@react-navigation/native';
 
-// Component để hiển thị đánh giá sao
 const Rating = ({ rating }) => {
     const fullStars = Math.floor(rating);
     const halfStar = rating % 1 !== 0;
@@ -23,42 +23,42 @@ const Rating = ({ rating }) => {
     return <View style={styles.ratingContainer}>{stars}</View>;
 };
 
-// Component hiển thị từng khóa học
-const CourseItem = ({ course }) => {
+const CourseItem = ({ course, onPress }) => {
     return (
-        <View style={styles.courseContainer}>
-            <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
-            <View style={styles.courseInfo}>
-                <Text style={styles.courseTitle}>{course.title}</Text>
-                <Text style={styles.courseInstructor}>{course.teacher}</Text>
-                <View style={styles.ratingRow}>
-                    <Text style={styles.courseRating}>{course.rating}</Text>
-                    <Rating rating={course.rating} />
-                    <Text style={styles.courseReviews}>({course.ratingCount})</Text>
+        <TouchableOpacity onPress={onPress}>
+            <View style={styles.courseContainer}>
+                <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
+                <View style={styles.courseInfo}>
+                    <Text style={styles.courseTitle}>{course.title}</Text>
+                    <Text style={styles.courseInstructor}>{course.teacher}</Text>
+                    <View style={styles.ratingRow}>
+                        <Text style={styles.courseRating}>{course.rating}</Text>
+                        <Rating rating={course.rating} />
+                        <Text style={styles.courseReviews}>({course.ratingCount})</Text>
+                    </View>
+                    <Text style={styles.coursePrice}>{`${course.realPrice} ₫`}</Text>
+                    {course.isBestseller && (
+                        <TouchableOpacity style={styles.bestsellerBadge}>
+                            <Text style={styles.bestsellerText}>Bestseller</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
-                <Text style={styles.coursePrice}>{`${course.realPrice} ₫`}</Text>
-                {course.isBestseller && (
-                    <TouchableOpacity style={styles.bestsellerBadge}>
-                        <Text style={styles.bestsellerText}>Bestseller</Text>
-                    </TouchableOpacity>
-                )}
             </View>
-        </View>
+        </TouchableOpacity>
     );
 };
 
-// Component chính hiển thị danh sách khóa học
 const Course = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState(''); // Trạng thái tìm kiếm
+    const [searchQuery, setSearchQuery] = useState('');
+    const navigation = useNavigation();  // Sử dụng navigation
 
-    // Lấy dữ liệu khóa học từ API
     const fetchCourses = async () => {
         try {
-            const courseRequest = { createdBy: 'hungsam' }; // Ví dụ dữ liệu request
-            const fetchedCourses = await courseService.getAllCourseNotOfStudent(courseRequest);
-            setCourses(fetchedCourses || []); // Nếu không có dữ liệu thì trả về mảng rỗng
+            const courseRequest = { createdBy: 'hungsam' }; 
+            const fetchedCourses = await courseService.getCourse(courseRequest);
+            setCourses(fetchedCourses || []); 
         } catch (error) {
             console.error('Lỗi khi lấy danh sách khóa học:', error);
         } finally {
@@ -70,12 +70,14 @@ const Course = () => {
         fetchCourses();
     }, []);
 
-    // Hàm lọc khóa học dựa trên từ khóa tìm kiếm
     const filteredCourses = courses.filter(course => 
         course.title.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
-    // Hiển thị loading spinner khi đang tải dữ liệu
+    const goToCourseDetail = (course) => {
+        navigation.navigate('CourseDetail', { course });
+    };
+
     if (loading) {
         return (
             <View style={styles.loaderContainer}>
@@ -93,22 +95,26 @@ const Course = () => {
                     placeholder="Tìm kiếm khóa học..."
                     placeholderTextColor="#ccc"
                     value={searchQuery}
-                    onChangeText={setSearchQuery} // Cập nhật trạng thái khi thay đổi văn bản
+                    onChangeText={setSearchQuery}
                 />
-                <TouchableOpacity >
+                <TouchableOpacity>
                     <IconR name="filter-outline" size={20} color="#000" />
                 </TouchableOpacity>
             </View>
             <FlatList
                 data={filteredCourses}
-                renderItem={({ item }) => <CourseItem course={item} />}
+                renderItem={({ item }) => (
+                    <CourseItem 
+                        course={item} 
+                        onPress={() => goToCourseDetail(item)}  // Truyền hàm goToCourseDetail
+                    />
+                )}
                 keyExtractor={(item) => item.id.toString()}
             />
         </View>
     );
 };
 
-// Styles
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -118,7 +124,7 @@ const styles = StyleSheet.create({
     searchBarContainer: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#fff', // Nền trắng
+        backgroundColor: '#fff', 
         padding: 10,
         borderRadius: 8,
         marginVertical: 10,
@@ -128,7 +134,7 @@ const styles = StyleSheet.create({
     searchBar: {
         flex: 1,
         marginLeft: 10,
-        color: '#000', // Chữ đen
+        color: '#000',
         fontSize: 16,
     },
     courseContainer: {

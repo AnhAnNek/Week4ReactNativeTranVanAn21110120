@@ -17,7 +17,10 @@ import Orders from "./src/srceens/Orders";
 import PlayCourse from './src/srceens/PlayCourse';
 import MyLearning from './src/srceens/MyLearn';
 import ChangePassword from './src/srceens/ChangePassword';
-
+import { LogBox } from "react-native";
+import Wishlist from './src/srceens/Wishlist';
+import History from './src/srceens/History';
+import OrderDetail from './src/srceens/OrderDetail';
 const Stack = createStackNavigator();
 LogBox.ignoreAllLogs();
 
@@ -39,6 +42,9 @@ function App() {
         <Stack.Screen name="PlayCourse" component={PlayCourse} />
         <Stack.Screen name="MyLearning" component={MyLearning} />
         <Stack.Screen name="ChangePassword" component={ChangePassword} />
+        <Stack.Screen name="Wishlist" component={Wishlist} />
+        <Stack.Screen name="History" component={History} />
+        <Stack.Screen name="OrderDetail" component={OrderDetail} />
 
       </Stack.Navigator>
       <Toast />

@@ -67,7 +67,7 @@ const Cart = () => {
             const paymentRequest = {
                 username: username,
                 method: 'VN_PAY',
-                amount: cart.totalAmount, // Payment amount
+                amount: cart.totalAmount, 
                 urlReturn: 'your-app-scheme://success',
             };
 
