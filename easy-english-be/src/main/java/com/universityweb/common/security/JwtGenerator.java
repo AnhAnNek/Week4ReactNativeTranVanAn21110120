@@ -3,11 +3,14 @@ package com.universityweb.common.security;
 import com.universityweb.common.Utils;
 import com.universityweb.common.auth.exception.JwtTokenCreationException;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtParser;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
@@ -20,7 +23,9 @@ import java.util.Date;
 @Component
 public class JwtGenerator implements Serializable {
     private static final Logger log = LogManager.getLogger(JwtGenerator.class);
-    private static final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS512);
+
+    @Value("${security.jwt.secret-key}")
+    private String secretKey;
 
     public String generateToken(
             String username,
@@ -31,6 +36,7 @@ public class JwtGenerator implements Serializable {
         Date expiresDate = Utils.toDate(expiration);
 
         try {
+            Key key = getSignInKey();
             String token = Jwts.builder()
                     .setSubject(username)
                     .setIssuedAt(currentDate)
@@ -45,9 +51,7 @@ public class JwtGenerator implements Serializable {
     }
 
     public String getUsernameFromJwt(String token) {
-        Claims claims = Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
+        Claims claims = buildJwtParser()
                 .parseClaimsJws(token)
                 .getBody();
         return claims.getSubject();
@@ -55,9 +59,7 @@ public class JwtGenerator implements Serializable {
 
     public boolean validateToken(String token) {
         try {
-            Jwts.parserBuilder()
-                    .setSigningKey(key)
-                    .build()
+            buildJwtParser()
                     .parseClaimsJws(token);
             return true;
         } catch (Exception e) {
@@ -66,11 +68,21 @@ public class JwtGenerator implements Serializable {
     }
 
     public Date getExpiration(String token) {
-        return Jwts.parserBuilder()
-                .setSigningKey(key)
-                .build()
+        return buildJwtParser()
                 .parseClaimsJws(token)
                 .getBody()
                 .getExpiration();
+    }
+
+    private JwtParser buildJwtParser() {
+        Key key = getSignInKey();
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build();
+    }
+
+    private Key getSignInKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(secretKey);
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

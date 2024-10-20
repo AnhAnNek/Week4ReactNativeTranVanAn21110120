@@ -2,7 +2,9 @@ package com.universityweb.course.model.request;
 
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Data
 @AllArgsConstructor
@@ -26,7 +28,9 @@ public class LessonRequest {
 
     private Boolean isPreview;
 
-    private LocalDateTime startDate;
+    private LocalDate startDate;
+
+    private LocalTime startTime;
 
     private LocalDateTime createdAt;
 

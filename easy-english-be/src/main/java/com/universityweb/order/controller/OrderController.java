@@ -60,4 +60,13 @@ public class OrderController {
         Page<OrderItemDTO> orderItems = orderService.getOrderItems(orderId, pageable);
         return ResponseEntity.ok(orderItems);
     }
+
+    @GetMapping("/get-by-id/{orderId}")
+    public ResponseEntity<OrderDTO> getOrderById(
+            @PathVariable Long orderId
+    ) {
+        log.info("Fetching order details for order ID: {}", orderId);
+        OrderDTO orderDTO = orderService.getOrderById(orderId);
+        return ResponseEntity.ok(orderDTO);
+    }
 }

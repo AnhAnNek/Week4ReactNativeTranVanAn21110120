@@ -1,6 +1,8 @@
 package com.universityweb.common.auth.entity;
 
 import com.universityweb.cart.entity.Cart;
+import com.universityweb.course.model.Course;
+import com.universityweb.course.model.Review;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,6 +57,11 @@ public class User implements UserDetails, Serializable {
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Cart cart;
 
+    @OneToMany(mappedBy = "createdBy", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Course> courses;
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    private List<Review> reviews;
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         List<SimpleGrantedAuthority> authorities = new ArrayList<>();

@@ -1,6 +1,7 @@
 package com.universityweb.course.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.universityweb.common.auth.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,7 +20,6 @@ public class Review {
 
     @ManyToOne
     @JoinColumn(name = "course_id")
-    @JsonBackReference
     private Course course;
 
     @Column(name = "rating")
@@ -28,7 +28,7 @@ public class Review {
     @Column(name = "comment")
     private String comment;
 
-    @Column(name = "owner")
-    private String owner;
-
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

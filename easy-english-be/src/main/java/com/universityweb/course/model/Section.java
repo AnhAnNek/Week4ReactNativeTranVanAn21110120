@@ -6,6 +6,7 @@ import com.universityweb.test.entity.Test;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.util.List;
 
@@ -29,12 +30,13 @@ public class Section {
     @JsonManagedReference
     private List<Lesson> lessons;
 
-    @Column(name = "created_by")
-    private String createdBy;
-
     @CreationTimestamp
     @Column(name = "created_at")
     private String createdAt;
+
+    @UpdateTimestamp
+    @Column(name = "updated_at")
+    private String updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "course_id")
@@ -44,4 +46,6 @@ public class Section {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "test_id")
     private Test test;
+
+    private int ordinalNumber;
 }

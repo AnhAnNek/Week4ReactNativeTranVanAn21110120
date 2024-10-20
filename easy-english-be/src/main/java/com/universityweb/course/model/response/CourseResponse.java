@@ -12,18 +12,25 @@ import java.util.List;
 @NoArgsConstructor
 public class CourseResponse {
     private Long id;
+    private List<Long> categoryIds;
+    private Long levelId;
+    private Long topicId;
     private String title;
     private String category;
-    private String level;
-    private String imageUrl;
-    private int duration;
+    //private String level;
+    private String imagePreview;
+    private String videoPreview;
+    private String descriptionPreview;
     private String description;
-    private double rating;
-    private int ratingCount;
+    private int duration;
+    private int countView;
     private Boolean isPublish;
-    private String createdBy;
+    private double progress;
+    //private String createdBy;
+    private double rating;
+    private double ratingCount;
+    private BigDecimal realPrice;
+    private String teacher;
     private String createdAt;
     private Boolean isActive;
-
-
 }

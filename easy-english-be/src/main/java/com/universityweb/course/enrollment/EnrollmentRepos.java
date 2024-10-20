@@ -1,5 +1,6 @@
 package com.universityweb.course.enrollment;
 
+import com.universityweb.common.auth.entity.User;
 import com.universityweb.course.enrollment.model.Enrollment;
 import com.universityweb.course.model.Course;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,6 @@ public interface EnrollmentRepos extends JpaRepository<Enrollment, Long> {
     @Query("SELECT e.course FROM Enrollment e WHERE e.type = 'PAID' " +
             "GROUP BY e.course ORDER BY COUNT(e) DESC")
     List<Course> findTop10CoursesBySales();
+
+    List<Enrollment> findByUser(User user);
 }

@@ -109,6 +109,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public OrderDTO getOrderById(Long orderId) {
+        Order order = getOrderEntityById(orderId);
+        return orderMapper.toOrderDTO(order);
+    }
+
+    @Override
     public OrderItemDTO getOrderItem(Long orderItemId) {
         OrderItem orderItem = getOrderItemEntityById(orderItemId);
 

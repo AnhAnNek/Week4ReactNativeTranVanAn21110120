@@ -12,6 +12,8 @@ public interface OrderService {
     OrderDTO updateOrder(OrderDTO orderDTO);
     Page<OrderDTO> getOrders(String username, Order.EStatus status, Pageable pageable);
     Order getOrderEntityById(Long orderId);
+    OrderDTO getOrderById(Long orderId);
+
 
     OrderItemDTO getOrderItem(Long orderItemId);
     Page<OrderItemDTO> getOrderItems(Long orderItemId, Pageable pageable);
