@@ -27,9 +27,21 @@ const getResult = async (params) => {
   return response.data;
 }
 
+const simulatePaymentSuccess = async (orderId) => {
+  try {
+    const path = `${SUFFIX_PAYMENT_API_URL}/simulate-success/${orderId}`;
+    const response = await post(path);
+    return response.data;
+  } catch (error) {
+    console.error('Error simulating payment success:', error);
+    throw error;
+  }
+};
+
 const payService = {
   createPaymentOrder,
   getResult,
+  simulatePaymentSuccess,
 }
 
 export default payService;

@@ -21,6 +21,7 @@ import { LogBox } from "react-native";
 import Wishlist from './src/srceens/Wishlist';
 import History from './src/srceens/History';
 import OrderDetail from './src/srceens/OrderDetail';
+import PendingPayment from "./src/srceens/PendingPayment";
 const Stack = createStackNavigator();
 LogBox.ignoreAllLogs();
 
@@ -45,7 +46,7 @@ function App() {
         <Stack.Screen name="Wishlist" component={Wishlist} />
         <Stack.Screen name="History" component={History} />
         <Stack.Screen name="OrderDetail" component={OrderDetail} />
-
+        <Stack.Screen name="PendingPayment" component={PendingPayment} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

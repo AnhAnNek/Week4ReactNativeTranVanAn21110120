@@ -13,7 +13,7 @@ import cartService from "../services/cartService";
 import paymentService from '../services/paymentService';
 import CartItem from "../components/CartItem";
 
-const Cart = () => {
+const Cart = ({ navigation }) => {
     const username = authService.getCurUser()?.username;
     const [cart, setCart] = useState({
         id: 1,
@@ -67,12 +67,13 @@ const Cart = () => {
             const paymentRequest = {
                 username: username,
                 method: 'VN_PAY',
-                amount: cart.totalAmount, 
-                urlReturn: 'your-app-scheme://success',
+                amount: cart.totalAmount, // Payment amount
+                urlReturn: 'http://localhost:3000',
             };
 
-            const paymentUrl = await paymentService.createPaymentOrder(paymentRequest);
-            successToast('Checkout successful! Redirecting to payment...');
+            // const paymentUrl = await paymentService.createPaymentOrder(paymentRequest);
+            successToast('Checkout successful! Redirecting to pending payment...');
+            navigation.navigate('PendingPayment');
         } catch (error) {
             console.error(error?.message);
             errorToast('Error during checkout. Please try again.');
@@ -118,6 +119,14 @@ const Cart = () => {
                     color="#00BFFF" // Cyan color
                     onPress={handleCheckout}
                     disabled={cart.items === null || cart.items.length === 0}
+                />
+
+                <Button
+                  title="Checkout"
+                  color="#00BFFF" // Cyan color
+                  onPress={() => navigation.navigate('PendingPayment', {
+                      orderId: 1
+                  })}
                 />
             </ScrollView>
         </View>
