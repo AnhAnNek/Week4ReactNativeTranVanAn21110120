@@ -67,6 +67,16 @@ const getAllCourseFavouriteOfStudent = async (courseRequest) => {
 
     return response.data;
 }
+const getAllCourseNotOfStudent = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/get-all-course-not-of-student`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
 
 const courseService = {
     getCourse,
@@ -74,7 +84,8 @@ const courseService = {
     getCourseByLevel,
     getCourseByListCategory,
     getAllCourseOfStudent,
-    getAllCourseFavouriteOfStudent
+    getAllCourseFavouriteOfStudent,
+    getAllCourseNotOfStudent
 }
 
 export default courseService;

@@ -1,110 +1,98 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView, StyleSheet, View } from 'react-native';
-import { Button, Snackbar, Text, TextInput } from 'react-native-paper';
+import React, { useState } from 'react';
+import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { API_URL } from '../utils/constants';
 import { put } from '../utils/httpRequest';
 
 const InputOtpToUpdateProfile = ({ route, navigation }) => {
   const { user } = route.params;
   const [otp, setOtp] = useState('');
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
 
-  useEffect(() => {
-    setOtp('');
-  }, []);
   const handleSubmit = async () => {
     if (otp.length !== 6) {
-      setError('Please enter a valid 6-digit OTP.');
+      Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
       return;
     }
 
     setLoading(true);
     try {
-      const editedUser = { ...user, otp: otp };
-      console.log(`editedUser: ${editedUser}`);
+      const editedUser = { ...user, otp };
+      const response = await put(`${API_URL}/auth/update-user-profile-with-otp`, editedUser);
 
-      const response = await put(
-        `${API_URL}/auth/update-user-profile-with-otp`,
-        editedUser,
-      );
-      if (response?.status === 200) {
-        setSnackbarMessage('Profile updated successfully!');
-        setTimeout(() => {
-          navigation.navigate('Home', { screen: 'UpdateProfile' });
-        }, 500);
+      if (response.status === 200) {
+        Alert.alert('Success', 'Profile updated successfully!');
+        navigation.navigate('Home', { screen: 'UpdateProfile' });
       } else {
-        setError('Invalid OTP, please try again.');
+        Alert.alert('Error', 'Invalid OTP, please try again.');
       }
     } catch (error) {
-      setError(error?.message);
+      Alert.alert('Error', error?.message);
     } finally {
       setLoading(false);
-      setSnackbarVisible(true);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.label}>Enter OTP to Update Profile</Text>
-        <TextInput
-          label="OTP"
-          value={otp}
-          onChangeText={setOtp}
-          keyboardType="numeric"
-          maxLength={6}
-          placeholder="Enter 6-digit OTP"
-          style={styles.input}
-          mode="outlined"
-        />
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          loading={loading}
-          disabled={loading}
-          style={styles.button}>
-          Submit OTP
-        </Button>
-        {error ? <Text style={styles.errorText}>{error}</Text> : null}
-        <Snackbar
-          visible={snackbarVisible}
-          onDismiss={() => setSnackbarVisible(false)}
-          duration={3000}>
-          {snackbarMessage}
-        </Snackbar>
-      </View>
+    <SafeAreaView style={styles.formContainer}>
+      <Text style={styles.title}>Enter OTP to Update Profile</Text>
+      <Text style={styles.subtitle}>Please enter the OTP sent to your email</Text>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Enter 6-digit OTP"
+        value={otp}
+        onChangeText={setOtp}
+        keyboardType="numeric"
+        maxLength={6}
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Updating...' : 'Submit OTP'}</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  formContainer: {
     flex: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 16,
-  },
-  content: {
+    backgroundColor: '#fff',
     alignItems: 'center',
+    justifyContent: 'center',
+    padding: 20,
   },
-  label: {
-    fontSize: 20,
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  subtitle: {
+    fontSize: 16,
+    color: '#666',
     marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    width: '100%',
-    marginBottom: 20,
+    width: '90%',
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
   button: {
-    width: '100%',
-    padding: 8,
+    width: '90%',
+    height: 50,
+    backgroundColor: '#00aaff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginBottom: 10,
   },
-  errorText: {
-    color: 'red',
-    marginTop: 10,
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
   },
 });
 

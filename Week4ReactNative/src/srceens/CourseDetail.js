@@ -57,7 +57,7 @@ const CourseDetail = ({ route }) => {
     }
 
     return (
-        <ScrollView style={styles.container}>
+        <ScrollView style={styles.container} scrollIndicatorInsets={{ right: 1 }}>
             <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
 
             <View style={styles.courseInfo}>
@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        
     },
     courseImage: {
         width: '100%',

@@ -8,10 +8,10 @@ import tw from 'twrnc';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { Ionicons } from '@expo/vector-icons';
 import CourseScreen from './Course';
-import UpdateProfile from './UpdateProfile';
 import BestSale from './BestSale';
 import MyLearn from './MyLearn';
 import Wishlist from './Wishlist';
+import Account from './Account';
 
 function HomeScreen({ navigation }) {
   const [user, setUser] = useState(null);
@@ -108,7 +108,7 @@ export default function Home() {
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused, color, size }) => {
           let iconName;
-          if (route.name === 'UpdateProfile') {
+          if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Course') {
             iconName = focused ? 'book' : 'book-outline';
@@ -122,6 +122,9 @@ export default function Home() {
           else if (route.name === 'Wishlist') {
             iconName = focused ? 'heart' : 'heart-outline';
           }
+          else if (route.name === 'Account') {
+            iconName = focused ? 'person' : 'person-outline';
+          }
 
           return <Ionicons name={iconName} size={size} color={color} />;
         },
@@ -132,8 +135,7 @@ export default function Home() {
       <Tab.Screen name="Course" component={CourseScreen} />
       <Tab.Screen name="MyLearn" component={MyLearn} />
       <Tab.Screen name="Wishlist" component={Wishlist} />
-      <Tab.Screen name="UpdateProfile" component={UpdateProfile} />
-
+      <Tab.Screen name="Account" component={Account} />
     </Tab.Navigator>
   );
 }

@@ -1,16 +1,13 @@
-import React, {useEffect, useState} from 'react';
-import {SafeAreaView, StyleSheet, TouchableOpacity, View} from 'react-native';
-import {Button, Snackbar, Text, TextInput} from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {post} from '../utils/httpRequest';
-import {isLoggedIn, removeToken} from '../utils/authUtils';
+import React, { useEffect, useState } from 'react';
+import { SafeAreaView, StyleSheet, TouchableOpacity, View, TextInput, Text, Alert } from 'react-native';
+import { API_URL } from '../utils/constants';
+import { post } from '../utils/httpRequest';
+import { isLoggedIn, removeToken } from '../utils/authUtils';
 
-function Login({navigation}) {
+function Login({ navigation }) {
   const [username, setUsername] = useState('vanan');
   const [password, setPassword] = useState('P@123456');
   const [loading, setLoading] = useState(false);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
 
   const handleLogin = async () => {
     removeToken();
@@ -18,7 +15,7 @@ function Login({navigation}) {
     console.log(`Password: ${password}`);
 
     if (!username || !password) {
-      showMessage('Please fill in both fields.');
+      Alert.alert('Error', 'Please fill in both fields.');
       return;
     }
 
@@ -36,20 +33,15 @@ function Login({navigation}) {
 
       if (response.status === 200) {
         const msg = response.data;
-        showMessage(msg, 'success');
-        navigation.navigate('InputOtpToLogin', {username});
+        Alert.alert('Success', msg);
+        navigation.navigate('InputOtpToLogin', { username });
       }
     } catch (error) {
       console.log(error.message);
-      showMessage(error.message, 'error');
+      Alert.alert('Error', error.message);
     } finally {
       setLoading(false);
     }
-  };
-
-  const showMessage = message => {
-    setSnackbarMessage(message);
-    setSnackbarVisible(true);
   };
 
   useEffect(() => {
@@ -66,42 +58,36 @@ function Login({navigation}) {
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.title}>Login</Text>
-      <View style={styles.inputContainer}>
-        <TextInput
-          label="Username"
-          value={username}
-          onChangeText={setUsername}
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <TextInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-          style={styles.input}
-          autoCapitalize="none"
-        />
-        <Button
-          mode="contained"
-          onPress={handleLogin}
-          style={styles.button}
-          loading={loading}
-          disabled={loading}>
+
+      <TextInput
+        style={styles.input}
+        placeholder="Username"
+        value={username}
+        onChangeText={setUsername}
+        autoCapitalize="none"
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={setPassword}
+        secureTextEntry
+        autoCapitalize="none"
+      />
+
+      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.buttonText}>
           {loading ? 'Logging in...' : 'Login'}
-        </Button>
-      </View>
-      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
-        <Text style={styles.registerText}>
-          Don't have an account? Register here
         </Text>
       </TouchableOpacity>
-      <Snackbar
-        visible={snackbarVisible}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}>
-        {snackbarMessage}
-      </Snackbar>
+
+      <TouchableOpacity onPress={() => navigation.navigate('Register')}>
+        <Text style={styles.linkText}>Don't have an account? Sign up</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
+        <Text style={styles.linkText}>Forget password</Text>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -109,33 +95,42 @@ function Login({navigation}) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#fff',
     justifyContent: 'center',
+    alignItems: 'center',
     padding: 20,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: 'bold',
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  inputContainer: {
     marginBottom: 20,
   },
   input: {
-    marginBottom: 10,
+    width: '90%',
+    height: 50,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    paddingHorizontal: 10,
+    marginBottom: 15,
   },
   button: {
-    marginTop: 20,
+    width: '90%',
+    height: 50,
+    backgroundColor: '#00aaff',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 5,
+    marginBottom: 10,
   },
-  registerText: {
+  buttonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  linkText: {
+    color: '#00aaff',
+    fontSize: 16,
     marginTop: 15,
-    textAlign: 'center',
-    color: 'blue',
-  },
-  forgotPasswordText: {
-    marginTop: 10,
-    textAlign: 'center',
-    color: 'blue',
   },
 });
 

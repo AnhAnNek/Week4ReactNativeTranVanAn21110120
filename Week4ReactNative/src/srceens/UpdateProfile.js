@@ -1,51 +1,68 @@
-import React, {useEffect, useState} from 'react';
-import {Platform, SafeAreaView, TouchableOpacity} from 'react-native';
+import React, { useState, useEffect } from 'react';
 import {
-  ActivityIndicator,
-  Button,
-  Card,
-  Snackbar,
+  View,
   Text,
   TextInput,
-} from 'react-native-paper';
-import {API_URL} from '../utils/constants';
-import {getToken, removeToken} from '../utils/authUtils';
-import {get, post} from '../utils/httpRequest';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import {Picker} from '@react-native-picker/picker';
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+} from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker'; // Thư viện cho date picker
+import DropDownPicker from 'react-native-dropdown-picker'; // Thư viện cho dropdown
+import { Button, Snackbar, ActivityIndicator } from 'react-native-paper';
+import { API_URL } from '../utils/constants';
+import { getToken, removeToken } from '../utils/authUtils';
+import { get, post } from '../utils/httpRequest';
 
-function UpdateProfile({navigation}) {
+const UpdateProfile = ({ navigation }) => {
   const [user, setUser] = useState({
-    username: '',
+    username: '', // Bổ sung username
     fullName: '',
     email: '',
     phoneNumber: '',
-    dob: '',
-    gender: 'MALE',
-    otp: '',
+    dob: '', // Thay vì sử dụng object Date, chúng ta lưu dưới dạng chuỗi yyyy-mm-dd trong state
+    gender: 'MALE', // Giá trị mặc định
+    otp: '', // Bổ sung otp
   });
   const [loading, setLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
-  const [dobPickerVisible, setDobPickerVisible] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
+  // Dropdown state for gender
+  const [open, setOpen] = useState(false);
+  const [sexOptions, setSexOptions] = useState([
+    { label: 'Male', value: 'MALE' },
+    { label: 'Female', value: 'FEMALE' },
+    { label: 'Other', value: 'OTHER' },
+  ]);
+
+  // Fetch user data based on token
   const fetchUserByToken = async () => {
     setLoading(true);
     try {
       const tokenStr = await getToken();
       const response = await get(`${API_URL}/auth/get-user-by-token`, {
-        params: {
-          tokenStr,
-        },
+        params: { tokenStr },
       });
       if (response.status === 200) {
-        setUser(response.data);
+        const userData = response.data;
+        setUser({
+          username: userData.username, // Lưu username
+          fullName: userData.fullName,
+          email: userData.email,
+          phoneNumber: userData.phoneNumber,
+          dob: userData.dob, // Chuyển ngày sinh thành chuỗi yyyy-mm-dd
+          gender: userData.gender,
+          otp: '', // OTP sẽ được cập nhật sau khi yêu cầu
+        });
       } else {
         setSnackbarMessage('User not found.');
         setSnackbarVisible(true);
       }
     } catch (error) {
-      setSnackbarMessage('An error occurred while fetching user data.');
+      setSnackbarMessage('Failed to fetch user data.');
       setSnackbarVisible(true);
     } finally {
       setLoading(false);
@@ -56,15 +73,13 @@ function UpdateProfile({navigation}) {
     setLoading(true);
     try {
       const response = await post(
-        `${API_URL}/auth/generate-otp-to-update-profile/${user.username}`,
+        `${API_URL}/auth/generate-otp-to-update-profile/${user.username}`
       );
       if (response.status === 200) {
         const msg = response.data;
         setSnackbarMessage(msg);
         setSnackbarVisible(true);
-
-        console.log(`Edited user: ${JSON.stringify(user)}`);
-        navigation.navigate('InputOtpToUpdateProfile', {user});
+        navigation.navigate('InputOtpToUpdateProfile', { user });
       } else {
         setSnackbarMessage('Profile update failed.');
         setSnackbarVisible(true);
@@ -77,13 +92,10 @@ function UpdateProfile({navigation}) {
     }
   };
 
-  const onDobChange = (event, selectedDate) => {
-    setDobPickerVisible(Platform.OS === 'ios');
-    if (selectedDate) {
-      const currentDate = selectedDate || new Date();
-      const formattedDate = currentDate.toISOString().split('T')[0];
-      setUser({...user, dob: formattedDate});
-    }
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || new Date(user.dob);
+    setShowDatePicker(Platform.OS === 'ios');
+    setUser({ ...user, dob: currentDate.toISOString().split('T')[0] }); // Chuyển thành chuỗi yyyy-mm-dd
   };
 
   const logout = () => {
@@ -96,105 +108,143 @@ function UpdateProfile({navigation}) {
   }, []);
 
   return (
-    <SafeAreaView style={{flex: 1, justifyContent: 'center', padding: 20}}>
-      <Text
-        variant="headlineLarge"
-        style={{textAlign: 'center', marginBottom: 20}}>
-        Update Profile
-      </Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <Text style={styles.title}>Update Profile</Text>
+
       {loading ? (
         <ActivityIndicator animating={true} />
       ) : (
-        <Card>
-          <Card.Content>
-            <TextInput
-              label="Full Name"
-              value={user.fullName}
-              onChangeText={text => setUser({...user, fullName: text})}
-              style={{marginBottom: 10}}
-            />
-            <TextInput
-              label="Email"
-              value={user.email}
-              onChangeText={text => setUser({...user, email: text})}
-              style={{marginBottom: 10}}
-            />
-            <TextInput
-              label="Phone Number"
-              value={user.phoneNumber}
-              onChangeText={text => setUser({...user, phoneNumber: text})}
-              style={{marginBottom: 10}}
-            />
-            <TouchableOpacity onPress={() => setDobPickerVisible(true)}>
-              <TextInput
-                label="Date of Birth (YYYY-MM-DD)"
-                value={user.dob}
-                editable={false}
-                style={{marginBottom: 10}}
-              />
-            </TouchableOpacity>
+        <>
+          {/* Full Name */}
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter full name"
+            value={user.fullName}
+            onChangeText={(text) => setUser({ ...user, fullName: text })}
+          />
 
-            {dobPickerVisible && (
-              <DateTimePicker
-                value={new Date()}
-                mode="date"
-                display="default"
-                onChange={onDobChange}
-                maximumDate={new Date()}
-              />
-            )}
+          {/* Email */}
+          <Text style={styles.label}>Email</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter email"
+            value={user.email}
+            onChangeText={(text) => setUser({ ...user, email: text })}
+            keyboardType="email-address"
+          />
 
-            <Picker
-              selectedValue={user.gender}
-              onValueChange={itemValue => setUser({...user, gender: itemValue})}
-              style={{marginBottom: 10}}>
-              <Picker.Item label="Male" value="MALE" />
-              <Picker.Item label="Female" value="FEMALE" />
-              <Picker.Item label="Other" value="OTHER" />
-            </Picker>
-          </Card.Content>
-        </Card>
+          {/* Phone Number */}
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Enter phone number"
+            value={user.phoneNumber}
+            onChangeText={(text) => setUser({ ...user, phoneNumber: text })}
+            keyboardType="phone-pad"
+          />
+
+          {/* Date of Birth */}
+          <Text style={styles.label}>Date of Birth</Text>
+          <TouchableOpacity
+            onPress={() => setShowDatePicker(true)}
+            style={styles.input}
+          >
+            <Text>{user.dob || 'Select Date'}</Text>
+          </TouchableOpacity>
+          {showDatePicker && (
+            <DateTimePicker
+              value={user.dob ? new Date(user.dob) : new Date()}
+              mode="date"
+              display="default"
+              onChange={onChangeDate}
+            />
+          )}
+
+          {/* Gender (Dropdown Select) */}
+          <Text style={styles.label}>Gender</Text>
+          <DropDownPicker
+            open={open}
+            value={user.gender}
+            items={sexOptions}
+            setOpen={setOpen}
+            setValue={(value) => setUser({ ...user, gender: value })}
+            setItems={setSexOptions}
+            placeholder="Select gender"
+            style={styles.dropdown}
+            dropDownContainerStyle={styles.dropdownContainer}
+          />
+
+          {/* Save Button */}
+          <TouchableOpacity style={styles.button} onPress={handleProfileUpdate}>
+            <Text style={styles.buttonText}>Update Profile</Text>
+          </TouchableOpacity>
+
+          {/* Logout Button */}
+          <TouchableOpacity style={styles.button} onPress={logout}>
+            <Text style={styles.buttonText}>Logout</Text>
+          </TouchableOpacity>
+        </>
       )}
-      <Button
-        mode="contained"
-        onPress={handleProfileUpdate}
-        loading={loading}
-        style={{marginTop: 20}}>
-        Update Profile
-      </Button>
-      <Button
-          mode="contained"
-          onPress={logout}
-          loading={loading}
-          style={{marginTop: 20}}>
-        Logout
-      </Button>
-      <Button
-          mode="contained"
-          onPress={() => {
-            navigation.navigate('Cart');
-          }}
-          loading={loading}
-          style={{marginTop: 20}}>
-        Go To Cart
-      </Button>
-      <Button
-          mode="contained"
-          onPress={() => {
-            navigation.navigate('Orders');
-          }}
-          loading={loading}
-          style={{marginTop: 20}}>
-        My Orders
-      </Button>
+
+      {/* Snackbar for displaying messages */}
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}>
+        duration={3000}
+      >
         {snackbarMessage}
       </Snackbar>
-    </SafeAreaView>
+    </ScrollView>
   );
-}
+};
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    padding: 20,
+    backgroundColor: '#fff',
+  },
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+  },
+  label: {
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  input: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+    paddingHorizontal: 10,
+    justifyContent: 'center',
+  },
+  dropdown: {
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 15,
+  },
+  dropdownContainer: {
+    borderColor: '#ccc',
+  },
+  button: {
+    backgroundColor: '#007bff',
+    padding: 15,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  buttonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+});
 
 export default UpdateProfile;
