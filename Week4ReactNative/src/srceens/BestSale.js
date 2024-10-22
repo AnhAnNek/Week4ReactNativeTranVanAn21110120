@@ -107,10 +107,10 @@ const CourseList = ({ navigation }) => {
 
     return (
         <ScrollView>
-            {renderCourseList("Bán chạy nhất", bestSellerCourses)}
-            {renderCourseList("Khóa học mới", newCourses)}
-            {renderCourseList("Khóa học cũ", oldCourses)}
-            {renderCourseList("Đánh giá cao", highRatedCourses)}
+            {renderCourseList("Best Seller", bestSellerCourses)}
+            {renderCourseList("New Course", newCourses)}
+            {renderCourseList("Old Course", oldCourses)}
+            {renderCourseList("Top Rating", highRatedCourses)}
         </ScrollView>
     );
 };

@@ -33,9 +33,9 @@ const Profile = ({ navigation }) => {
     // Dropdown state for gender
     const [open, setOpen] = useState(false);
     const [sexOptions, setSexOptions] = useState([
-        { label: 'MALE', value: 'MALE' },
-        { label: 'FEMALE', value: 'FEMALE' },
-        { label: 'OTHER', value: 'OTHER' },
+        { label: 'Male', value: 'MALE' },
+        { label: 'Female', value: 'FEMALE' },
+        { label: 'Other', value: 'OTHER' },
     ]);
 
     // Fetch user data based on token
@@ -163,7 +163,7 @@ const Profile = ({ navigation }) => {
                         value={user.gender}
                         items={sexOptions}
                         setOpen={setOpen}
-                        setValue={(value) => setUser({ ...user, gender: value })}
+                        setValue={(callback) => setUser(prevState => ({ ...prevState, gender: callback() }))}
                         setItems={setSexOptions}
                         placeholder="Select gender"
                         style={styles.dropdown}

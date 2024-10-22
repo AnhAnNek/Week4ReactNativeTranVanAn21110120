@@ -10,17 +10,19 @@ import {
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import courseService from '../services/courseService';
+import authService from "../services/authService";
 
 const MyLearn = () => {
     const [courses, setCourses] = useState([]);
     const [loading, setLoading] = useState(false);
     const navigation = useNavigation();
+    const [user, setUser] = useState(null);
 
     const fetchStudentCourses = async () => {
         setLoading(true);
         try {
             const courseRequest = {
-                createdBy: 'hungsam',
+                createdBy: user?.username,
             };
             const studentCourses = await courseService.getAllCourseOfStudent(courseRequest);
             if (studentCourses) {
@@ -33,8 +35,27 @@ const MyLearn = () => {
         }
     };
 
+
+    const fetchUserByToken = async () => {
+        setLoading(true);
+        try {
+            const userData = await authService.getCurUser();
+            setUser(userData);
+        } catch (error) {
+            errorToast('An error occurred while fetching user data.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    
     useEffect(() => {
-        fetchStudentCourses();
+        if (user) {
+            fetchStudentCourses();
+        }
+    }, [user]);
+
+    useEffect(() => {
+        fetchUserByToken();
     }, []);
 
     const renderCourseItem = ({ item }) => (

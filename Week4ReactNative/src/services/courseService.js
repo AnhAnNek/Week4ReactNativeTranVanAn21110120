@@ -78,6 +78,39 @@ const getAllCourseNotOfStudent = async (courseRequest) => {
     return response.data;
 }
 
+const addFavourite = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/add-course-to-favorite`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
+
+const deleteFavourite = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/remove-course-from-favorite`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
+
+const checkFavourite = async (courseRequest) => {
+    const path = `${SUFFIX_COURSE_API_URL}/check-course-in-favorite`;
+    const response = await post(path, courseRequest);
+
+    if (response?.status !== 200) {
+        return null;
+    }
+
+    return response.data;
+}
+
 const courseService = {
     getCourse,
     getCourseByTopic,
@@ -85,7 +118,10 @@ const courseService = {
     getCourseByListCategory,
     getAllCourseOfStudent,
     getAllCourseFavouriteOfStudent,
-    getAllCourseNotOfStudent
+    getAllCourseNotOfStudent,
+    addFavourite,
+    deleteFavourite,
+    checkFavourite
 }
 
 export default courseService;

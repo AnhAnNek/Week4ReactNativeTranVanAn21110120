@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome'; // For FontAwesome icons
 import courseService from '../services/courseService'; // Import the API service
+import authService from "../services/authService";
 
 // Component to display the star rating
 const Rating = ({ rating }) => {
@@ -50,6 +51,7 @@ const CourseItem = ({ course }) => {
 const Wishlist = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
 
   // Fetch courses from the API
   const fetchCourses = async () => {
@@ -64,9 +66,28 @@ const Wishlist = () => {
     }
   };
 
+
+  const fetchUserByToken = async () => {
+    setLoading(true);
+    try {
+      const userData = await authService.getCurUser();
+      setUser(userData);
+    } catch (error) {
+      errorToast('An error occurred while fetching user data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    fetchUserByToken();
+}, []);
+
+  useEffect(() => {
+    if (user) {
+      fetchCourses();
+    }
+  }, [user]);
 
   // Show loading spinner while fetching data
   if (loading) {

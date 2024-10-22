@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useNavigation } from '@react-navigation/native'; // Import useNavigation hook
 import orderService from '../services/orderService'; // Ensure the correct path to the service
+import authService from "../services/authService";
 
 const OrderStatus = ({ status }) => {
     let backgroundColor;
@@ -40,31 +41,47 @@ const OrderScreen = () => {
     const [selectedTab, setSelectedTab] = useState('All');
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState(null);
 
-    const navigation = useNavigation(); // Use navigation hook
+    const navigation = useNavigation();
 
-    // Function to fetch orders
-    const fetchOrders = async (status) => {
-        setLoading(true);  // Show loading while fetching data
+    const fetchUserByToken = async () => {
+        setLoading(true);
         try {
-            let response;
-            if (status === 'All') {
-                response = await orderService.getOrders('hungsam'); // Fetch all orders
-            } else {
-                response = await orderService.getOrdersByStatus('hungsam', status); // Fetch orders by status
-            }
-            setOrders(response?.content || []);  // Update orders list
+            const userData = await authService.getCurUser();
+            setUser(userData);
         } catch (error) {
-            console.error(error);
+            errorToast('An error occurred while fetching user data.');
         } finally {
-            setLoading(false);  // Hide loading when data is fetched
+            setLoading(false);
         }
     };
 
-    // Fetch orders when the component mounts or when selectedTab changes
+    const fetchOrders = async (status) => {
+        setLoading(true);
+        try {
+            let response;
+            if (status === 'All') {
+                response = await orderService.getOrders(user?.username);
+            } else {
+                response = await orderService.getOrdersByStatus(user?.username, status);
+            }
+            setOrders(response?.content || []);
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     useEffect(() => {
         fetchOrders(selectedTab);
-    }, [selectedTab]);
+    }, [selectedTab, user]);
+
+
+    useEffect(() => {
+        fetchUserByToken();
+    }, []);
 
     const renderOrders = () => {
         if (loading) {
