@@ -26,16 +26,16 @@ const CourseCard = ({ course, onPress }) => {
     return (
         <TouchableOpacity onPress={onPress}>
             <View style={styles.courseCard}>
-                <Image source={{ uri: course.imagePreview }} style={styles.courseImage} />
+                <Image source={{ uri: course?.imagePreview }} style={styles.courseImage} />
                 <View style={styles.courseInfo}>
-                    <Text style={styles.courseTitle}>{course.title}</Text>
-                    <Text style={styles.courseInstructor}>{course.createdBy}</Text>
+                    <Text style={styles.courseTitle}>{course?.title}</Text>
+                    <Text style={styles.courseInstructor}>{course?.ownerUsername}</Text>
                     <View style={styles.ratingRow}>
-                        <Text style={styles.courseRating}>{course.rating}</Text>
-                        <Rating rating={course.rating} />
-                        <Text style={styles.courseReviews}>({course.ratingCount})</Text>
+                        <Text style={styles.courseRating}>{course?.rating}</Text>
+                        <Rating rating={course?.rating} />
+                        <Text style={styles.courseReviews}>({course?.ratingCount})</Text>
                     </View>
-                    <Text style={styles.coursePrice}>{`${course.price} ₫`}</Text>
+                    <Text style={styles.coursePrice}>{`${course?.price?.price} ₫`}</Text>
                     {course.bestSeller && (
                         <View style={styles.bestsellerBadge}>
                             <Text style={styles.bestsellerText}>Bestseller</Text>

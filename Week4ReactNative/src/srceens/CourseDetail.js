@@ -204,13 +204,13 @@ const CourseDetail = ({ route }) => {
             <Text style={styles.courseReviews}>({course.ratingCount} ratings)</Text>
           </View>
 
-          <Text style={styles.instructor}>Người tạo: {course.teacher}</Text>
+          <Text style={styles.instructor}>Người tạo: {course.ownerUsername}</Text>
           <Text style={styles.lastUpdated}>Last updated: 2024/08</Text>
           <Text style={styles.languages}>Languages: English, Vietnamese, etc.</Text>
         </View>
 
         <View style={styles.priceSection}>
-          <Text style={styles.price}>{course.realPrice} đ</Text>
+          <Text style={styles.price}>{course.price.price} đ</Text>
 
           <TouchableOpacity style={styles.buttonBuy}>
             <Text style={styles.buttonText}>Add to cart</Text>
@@ -305,7 +305,7 @@ const CourseDetail = ({ route }) => {
 
       {isFixed && (
         <Animated.View style={styles.fixedFooter}>
-          <Text style={styles.price}>{course.realPrice} đ</Text>
+          <Text style={styles.price}>{course?.price?.price} đ</Text>
           <TouchableOpacity style={styles.buttonBuySmall}>
             <Text style={styles.buttonText}>Add to cart</Text>
           </TouchableOpacity>
