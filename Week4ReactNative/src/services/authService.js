@@ -1,4 +1,4 @@
-import { getToken, isLoggedIn, removeToken, saveToken } from '../utils/authUtils';
+import {getToken, isLoggedIn, removeToken, removeUsername, saveToken, saveUsername} from '../utils/authUtils';
 import {get, handleResponse, post, put} from '../utils/httpRequest';
 
 const SUFFIX_AUTH_API_URL = '/auth';
@@ -27,6 +27,7 @@ const login = async (loginRequest) => {
 
   const loginResponse = await response.data;
   await saveToken(loginResponse?.tokenStr);
+  await saveUsername(loginResponse?.user?.username);
   return loginResponse;
 };
 

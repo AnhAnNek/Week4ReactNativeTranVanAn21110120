@@ -7,8 +7,13 @@ const CartItem = ({ cartItem, handleRemoveFromCart }) => {
         <View style={styles.container} key={cartItem.id}>
             <View style={styles.detailsContainer}>
                 <Text style={styles.title}>{cartItem?.course?.title}</Text>
-                <Text style={styles.description}>{cartItem?.course?.description}</Text>
-                <Text style={styles.teacher}>Teacher: {cartItem?.course?.createdBy}</Text>
+
+                {/* Truncate long descriptions with ellipsis */}
+                <Text style={styles.description} numberOfLines={2} ellipsizeMode="tail">
+                    {cartItem?.course?.descriptionPreview}
+                </Text>
+
+                <Text style={styles.teacher}>Teacher: {cartItem?.course?.ownerUsername}</Text>
             </View>
             <View style={styles.priceContainer}>
                 <Text style={styles.price}>

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
 import { API_URL } from '../utils/constants';
 import { post } from '../utils/httpRequest';
-import { saveToken } from '../utils/authUtils';
+import {saveToken, saveUsername} from '../utils/authUtils';
 
 const InputOtpToLogin = ({ route, navigation }) => {
   const { username } = route.params;
@@ -20,9 +20,10 @@ const InputOtpToLogin = ({ route, navigation }) => {
         );
         console.log(`Response status: ${response.status}`);
         if (response.status === 200) {
-          const tokenStr = await response?.data?.tokenStr;
-          console.log(`tokenStr: ${tokenStr}`);
-          await saveToken(tokenStr);
+          const loginResponse = response?.data;
+          console.log(`tokenStr: ${loginResponse?.tokenStr}`);
+          await saveToken(loginResponse?.tokenStr);
+          await saveUsername(loginResponse?.user?.username);
           Alert.alert('Success', 'OTP verified successfully!');
           navigation.navigate('Home');
         } else {

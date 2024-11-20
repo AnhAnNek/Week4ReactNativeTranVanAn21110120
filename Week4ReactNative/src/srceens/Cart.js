@@ -7,14 +7,13 @@ import {
     ScrollView,
     StyleSheet,
 } from 'react-native';
-import {errorToast, successToast} from "../utils/methods";
-import authService from "../services/authService";
+import { errorToast, successToast } from "../utils/methods";
 import cartService from "../services/cartService";
 import paymentService from '../services/paymentService';
 import CartItem from "../components/CartItem";
+import { getUsername } from "../utils/authUtils";
 
 const Cart = ({ navigation }) => {
-    const username = authService.getCurUser()?.username;
     const [cart, setCart] = useState({
         id: 1,
         totalAmount: 150.75,
@@ -41,7 +40,8 @@ const Cart = ({ navigation }) => {
     const fetchCart = async () => {
         setLoading(true);
         try {
-            const cart = await cartService.getCart(username);
+          const resolvedUsername = await getUsername();
+            const cart = await cartService.getCart(resolvedUsername);
             setCart(cart);
         } catch (error) {
             console.error(error?.message);
@@ -64,16 +64,21 @@ const Cart = ({ navigation }) => {
 
     const handleCheckout = async () => {
         try {
+            const resolvedUsername = await getUsername();
             const paymentRequest = {
-                username: username,
+                username: resolvedUsername,
                 method: 'VN_PAY',
-                amount: cart.totalAmount, // Payment amount
                 urlReturn: 'http://localhost:3000',
             };
 
-            // const paymentUrl = await paymentService.createPaymentOrder(paymentRequest);
+            console.log(`paymentRequest: ${JSON.stringify(paymentRequest)}`);
+
+            const paymentResponse = await paymentService.createPaymentOrder(paymentRequest);
+            const orderId = paymentResponse?.orderId;
             successToast('Checkout successful! Redirecting to pending payment...');
-            navigation.navigate('PendingPayment');
+
+            // Pass the actual orderId when navigating to PendingPayment
+            navigation.navigate('PendingPayment', { orderId });
         } catch (error) {
             console.error(error?.message);
             errorToast('Error during checkout. Please try again.');
@@ -81,55 +86,47 @@ const Cart = ({ navigation }) => {
     };
 
     return (
-        <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Text style={styles.heading}>Course Cart</Text>
+      <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+              <Text style={styles.heading}>Course Cart</Text>
 
-                {loading ? (
-                    <View style={styles.loader}>
-                        <ActivityIndicator size="large" />
-                    </View>
-                ) : (
-                    <View style={styles.itemsContainer}>
-                        {cart.items === null || cart.items.length === 0 ? (
-                            <Text style={styles.emptyCartText}>
-                                Your cart is empty.
-                            </Text>
-                        ) : (
-                            cart.items.map((cartItem) => (
-                                <CartItem
-                                    key={cartItem.id}
-                                    cartItem={cartItem}
-                                    handleRemoveFromCart={handleRemoveFromCart}
-                                />
-                            ))
-                        )}
-                    </View>
-                )}
+              {loading ? (
+                <View style={styles.loader}>
+                    <ActivityIndicator size="large" />
+                </View>
+              ) : (
+                <View style={styles.itemsContainer}>
+                    {cart.items === null || cart.items.length === 0 ? (
+                      <Text style={styles.emptyCartText}>
+                          Your cart is empty.
+                      </Text>
+                    ) : (
+                      cart.items.map((cartItem) => (
+                        <CartItem
+                          key={cartItem.id}
+                          cartItem={cartItem}
+                          handleRemoveFromCart={handleRemoveFromCart}
+                        />
+                      ))
+                    )}
+                </View>
+              )}
 
-                <Text style={styles.totalAmount}>
-                    Total: {new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                }).format(cart?.totalAmount)}
-                </Text>
+              <Text style={styles.totalAmount}>
+                  Total: {new Intl.NumberFormat('vi-VN', {
+                  style: 'currency',
+                  currency: 'VND',
+              }).format(cart?.totalAmount)}
+              </Text>
 
-                <Button
-                    title="Checkout"
-                    color="#00BFFF" // Cyan color
-                    onPress={handleCheckout}
-                    disabled={cart.items === null || cart.items.length === 0}
-                />
-
-                <Button
-                  title="Checkout"
-                  color="#00BFFF" // Cyan color
-                  onPress={() => navigation.navigate('PendingPayment', {
-                      orderId: 1
-                  })}
-                />
-            </ScrollView>
-        </View>
+              <Button
+                disabled={!cart?.items || cart.items?.length <= 0}
+                title="Checkout"
+                color="#00BFFF" // Cyan color
+                onPress={handleCheckout}
+              />
+          </ScrollView>
+      </View>
     );
 };
 
