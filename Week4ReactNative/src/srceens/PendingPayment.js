@@ -18,10 +18,12 @@ const PendingPayment = ({ navigation, route }) => {
   const handleSimulatePayment = async () => {
     setLoading(true);  // Show loader while simulating payment
     try {
-      const status = await paymentService.simulatePaymentSuccess(orderId);
+      const paymentResponse = await paymentService.simulatePaymentSuccess(orderId);
+      const status = paymentResponse?.status;
       if (status === 'SUCCESS') {
         setPaymentStatus('SUCCESS');
         successToast('Payment simulated successfully');
+        navigation.navigate('History');  // Navigate to History after successful payment
       } else if (status === 'FAILED') {
         setPaymentStatus('FAILED');
         errorToast('Payment failed');
@@ -32,6 +34,18 @@ const PendingPayment = ({ navigation, route }) => {
       errorToast('Error simulating payment');
     } finally {
       setLoading(false);  // Hide loader after the process
+    }
+  };
+
+  // Determine the color for the payment status dynamically
+  const getStatusColor = () => {
+    switch (paymentStatus) {
+      case 'SUCCESS':
+        return 'green';
+      case 'FAILED':
+        return 'red';
+      default:
+        return '#555';
     }
   };
 
@@ -49,7 +63,7 @@ const PendingPayment = ({ navigation, route }) => {
           <Text style={styles.orderIdText}>Order ID: {orderId}</Text>
 
           {/* Display the Payment Status */}
-          <Text style={styles.statusText}>
+          <Text style={[styles.statusText, { color: getStatusColor() }]}>
             Payment Status: {paymentStatus}
           </Text>
 
@@ -105,16 +119,6 @@ const styles = StyleSheet.create({
   },
   statusText: {
     fontSize: 18,
-    color: (paymentStatus) => {
-      switch (paymentStatus) {
-        case 'SUCCESS':
-          return 'green';
-        case 'FAILED':
-          return 'red';
-        default:
-          return '#555';
-      }
-    },
     marginBottom: 20,
     textAlign: 'center',
   },
