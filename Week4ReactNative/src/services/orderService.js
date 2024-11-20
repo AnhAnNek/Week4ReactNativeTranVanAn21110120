@@ -38,10 +38,17 @@ const getOrderItemsByOrderId = async (orderId, page = 0, size = 8) => {
     return response?.status === 200 ? response.data : null;
 }
 
+const getTotalAmount = async (status) => {
+    const path = `${SUFFIX_PAYMENT_API_URL}/total-amount/${status}`;
+    const response = await get(path);
+    return response?.status === 200 ? response.data : null;
+}
+
 const orderService = {
     getOrders,
     getOrdersByStatus,
     getOrderItemsByOrderId,
+    getTotalAmount,
 }
 
 export default orderService;

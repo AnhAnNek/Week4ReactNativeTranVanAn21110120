@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { useNavigation } from '@react-navigation/native'; // Import useNavigation hook
+import { useNavigation } from '@react-navigation/native';
 import orderService from '../services/orderService'; // Ensure the correct path to the service
 import authService from "../services/authService";
 
@@ -25,15 +25,19 @@ const OrderStatus = ({ status }) => {
             backgroundColor = '#9E9E9E';
             text = 'REFUNDED';
             break;
+        case 'EXPIRED': // New case for EXPIRED status
+            backgroundColor = '#FF5722';
+            text = 'EXPIRED';
+            break;
         default:
             backgroundColor = '#000';
             text = 'UNKNOWN';
     }
 
     return (
-        <View style={[styles.statusContainer, { backgroundColor }]}>
-            <Text style={styles.statusText}>{text}</Text>
-        </View>
+      <View style={[styles.statusContainer, { backgroundColor }]}>
+          <Text style={styles.statusText}>{text}</Text>
+      </View>
     );
 };
 
@@ -42,6 +46,7 @@ const OrderScreen = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
     const [user, setUser] = useState(null);
+    const [totalAmount, setTotalAmount] = useState(null); // New state for the total amount
 
     const navigation = useNavigation();
 
@@ -51,7 +56,7 @@ const OrderScreen = () => {
             const userData = await authService.getCurUser();
             setUser(userData);
         } catch (error) {
-            errorToast('An error occurred while fetching user data.');
+            console.error('An error occurred while fetching user data:', error);
         } finally {
             setLoading(false);
         }
@@ -74,10 +79,21 @@ const OrderScreen = () => {
         }
     };
 
-    useEffect(() => {
-        fetchOrders(selectedTab);
-    }, [selectedTab, user]);
+    const fetchTotalAmount = async (status) => {
+        try {
+            const amount = await orderService.getTotalAmount(status);
+            setTotalAmount(amount?.totalAmount);
+        } catch (error) {
+            console.error('Error fetching total amount:', error);
+        }
+    };
 
+    useEffect(() => {
+        if (user) {
+            fetchOrders(selectedTab);
+            fetchTotalAmount(selectedTab); // Fetch total amount when tab changes
+        }
+    }, [selectedTab, user]);
 
     useEffect(() => {
         fetchUserByToken();
@@ -91,41 +107,53 @@ const OrderScreen = () => {
             return <Text>No orders available.</Text>;
         }
         return orders.map((order) => (
-            <TouchableOpacity
-                key={order.id}
-                style={styles.orderCard}
-                onPress={() => navigation.navigate('OrderDetail', { orderId: order.id })} // Navigate to OrderDetail with orderId
-            >
-                <Text style={styles.orderId}>Order ID: {order.id}</Text>
-                <Text style={styles.amount}>Total Amount: {order.totalAmount} {order.currency}</Text>
-                <Text style={styles.createdAt}>Created At: {new Date(order.createdAt).toLocaleString()}</Text>
-                <OrderStatus status={order.status} />
-            </TouchableOpacity>
+          <TouchableOpacity
+            key={order.id}
+            style={styles.orderCard}
+            onPress={() => navigation.navigate('OrderDetail', { orderId: order.id })}
+          >
+              <Text style={styles.orderId}>Order ID: {order.id}</Text>
+              {/* Format the total amount in VND */}
+              <Text style={styles.amount}>Total Amount: {order.totalAmount.toLocaleString('vi-VN')} VND</Text>
+              <Text style={styles.createdAt}>Created At: {new Date(order.createdAt).toLocaleString()}</Text>
+              <OrderStatus status={order.status} />
+          </TouchableOpacity>
         ));
     };
 
     return (
-        <View style={styles.container}>
-            <ScrollView horizontal style={styles.tabsContainer} showsHorizontalScrollIndicator={false}>
-                {['All', 'PENDING_PAYMENT', 'PAID', 'FAILED', 'REFUNDED'].map((tab) => (
-                    <TouchableOpacity
-                        key={tab}
-                        style={[
-                            styles.tab,
-                            selectedTab === tab && styles.activeTab,
-                        ]}
-                        onPress={() => setSelectedTab(tab)}
-                    >
-                        <Text style={selectedTab === tab ? styles.activeTabText : styles.tabText}>
-                            {tab}
-                        </Text>
-                    </TouchableOpacity>
-                ))}
-            </ScrollView>
-            <ScrollView style={styles.orderList}>
-                {renderOrders()}
-            </ScrollView>
-        </View>
+      <View style={styles.container}>
+          {/* Display total amount */}
+          {totalAmount !== null && (
+            <View style={styles.totalAmountContainer}>
+                <Text style={styles.totalAmountText}>
+                    Total Amount for {selectedTab}: {totalAmount.toLocaleString('vi-VN')} VND
+                </Text>
+            </View>
+          )}
+
+          {/* Horizontal ScrollView for the tabs */}
+          <ScrollView horizontal style={styles.tabsContainer} showsHorizontalScrollIndicator={false}>
+              {['All', 'PENDING_PAYMENT', 'PAID', 'FAILED', 'REFUNDED', 'EXPIRED'].map((tab) => ( // Added EXPIRED
+                <TouchableOpacity
+                  key={tab}
+                  style={[
+                      styles.tab,
+                      selectedTab === tab && styles.activeTab,
+                  ]}
+                  onPress={() => setSelectedTab(tab)}
+                >
+                    <Text style={selectedTab === tab ? styles.activeTabText : styles.tabText}>
+                        {tab}
+                    </Text>
+                </TouchableOpacity>
+              ))}
+          </ScrollView>
+
+          <ScrollView style={styles.orderList}>
+              {renderOrders()}
+          </ScrollView>
+      </View>
     );
 };
 

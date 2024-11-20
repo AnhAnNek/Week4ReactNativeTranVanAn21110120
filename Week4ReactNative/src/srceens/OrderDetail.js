@@ -2,39 +2,6 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, ScrollView, StyleSheet, ActivityIndicator } from 'react-native';
 import orderService from '../services/orderService'; 
 
-const OrderStatus = ({ status }) => {
-    let backgroundColor;
-    let text;
-
-    switch (status) {
-        case 'PENDING_PAYMENT':
-            backgroundColor = '#FFC107';
-            text = 'PENDING_PAYMENT';
-            break;
-        case 'PAID':
-            backgroundColor = '#4CAF50';
-            text = 'PAID';
-            break;
-        case 'FAILED':
-            backgroundColor = '#F44336';
-            text = 'FAILED';
-            break;
-        case 'REFUNDED':
-            backgroundColor = '#9E9E9E';
-            text = 'REFUNDED';
-            break;
-        default:
-            backgroundColor = '#000';
-            text = 'UNKNOWN';
-    }
-
-    return (
-        <View style={[styles.statusContainer, { backgroundColor }]}>
-            <Text style={styles.statusText}>{text}</Text>
-        </View>
-    );
-};
-
 const OrderDetail = ({ route }) => {
     const { orderId } = route.params; 
     const [orderDetail, setOrderDetail] = useState(null);
@@ -79,11 +46,23 @@ const OrderDetail = ({ route }) => {
             <View style={styles.section}>
                 <Text style={styles.sectionTitle}>Order Items</Text>
                 {orderDetail.content.map((item, index) => (
-                    <View key={index} style={styles.itemCard}>
-                        <Text style={styles.itemTextBold}>Course: {item.course.title}</Text>
-                        <Text style={styles.itemText}>Price: ${item.price.toFixed(2)}</Text>
-                        <Text style={styles.itemTextHighlight}>Discount: {item.discountPercent}%</Text>
-                    </View>
+                  <View key={index} style={styles.itemCard}>
+                      <Text style={styles.itemTextBold}>Course: {item.course.title}</Text>
+
+                      {/* Safely display price in VND */}
+                      {item.price !== undefined && (
+                        <Text style={styles.itemText}>
+                            Price: {item.price.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' })}
+                        </Text>
+                      )}
+
+                      {/* Conditionally display the discount if it's greater than 0 */}
+                      {item.discountPercent > 0 && (
+                        <Text style={styles.itemTextHighlight}>
+                            Discount: {item.discountPercent}%
+                        </Text>
+                      )}
+                  </View>
                 ))}
             </View>
         </ScrollView>

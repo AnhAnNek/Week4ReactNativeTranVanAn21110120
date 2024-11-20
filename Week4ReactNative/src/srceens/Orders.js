@@ -16,10 +16,15 @@ const Orders = () => {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('All'); // Default tab
+    const [totalAmount, setTotalAmount] = useState(null); // State for total amount
 
     useEffect(() => {
         fetchOrders();
     }, []);
+
+    useEffect(() => {
+        fetchTotalAmount(activeTab);
+    }, [activeTab]);
 
     const fetchOrders = async () => {
         setLoading(true);
@@ -28,10 +33,25 @@ const Orders = () => {
             setOrders(fetchedOrders);
         } catch (error) {
             console.error(error?.message);
-            setOrders([])
+            setOrders([]);
             errorToast('Error fetching orders');
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchTotalAmount = async (status) => {
+        try {
+            const response = await orderService.getTotalAmount(status);
+            console.log(`getTotalAmount: ${JSON.stringify(response?.totalAmounts)}`)
+            if (response) {
+                setTotalAmount(response?.totalAmount);
+            } else {
+                setTotalAmount(null);
+            }
+        } catch (error) {
+            console.error('Error fetching total amount:', error);
+            setTotalAmount(null);
         }
     };
 
@@ -42,106 +62,115 @@ const Orders = () => {
 
     const renderOrderItem = (order) => {
         return (
-            <View key={order.id} style={styles.orderContainer}>
-                <View style={styles.storeHeader}>
-                    <Text style={styles.storeLabel}>Yêu thích+</Text>
-                    <Text style={styles.storeName}>{order.storeName}</Text>
-                    <Text style={styles.orderStatus}>Completed</Text>
-                </View>
+          <View key={order.id} style={styles.orderContainer}>
+              <View style={styles.storeHeader}>
+                  <Text style={styles.storeLabel}>Yêu thích+</Text>
+                  <Text style={styles.storeName}>{order.storeName}</Text>
+                  <Text style={styles.orderStatus}>Completed</Text>
+              </View>
 
-                {order.items.map((item) => (
-                    <View key={item.id} style={styles.orderItem}>
-                        <Image
-                            source={{ uri: item.image }}
-                            style={styles.itemImage}
-                        />
-                        <View style={styles.itemDetails}>
-                            <Text style={styles.itemName}>{item.name}</Text>
-                            <Text style={styles.itemVariant}>{item.variant}</Text>
-                            <Text style={styles.itemQuantity}>x{item.quantity}</Text>
-                        </View>
-                        <View style={styles.itemPriceContainer}>
-                            {item.discountedPrice && (
-                                <Text style={styles.itemOldPrice}>
-                                    ₫{item.originalPrice.toLocaleString('vi-VN')}
-                                </Text>
-                            )}
-                            <Text style={styles.itemPrice}>
-                                ₫{item.discountedPrice.toLocaleString('vi-VN')}
-                            </Text>
-                        </View>
+              {order.items.map((item) => (
+                <View key={item.id} style={styles.orderItem}>
+                    <Image
+                      source={{ uri: item.image }}
+                      style={styles.itemImage}
+                    />
+                    <View style={styles.itemDetails}>
+                        <Text style={styles.itemName}>{item.name}</Text>
+                        <Text style={styles.itemVariant}>{item.variant}</Text>
+                        <Text style={styles.itemQuantity}>x{item.quantity}</Text>
                     </View>
-                ))}
-
-                <View style={styles.orderSummary}>
-                    <Text style={styles.totalItems}>{order.items.length} items</Text>
-                    <Text style={styles.orderTotal}>
-                        Order Total: ₫{order.totalAmount.toLocaleString('vi-VN')}
-                    </Text>
+                    <View style={styles.itemPriceContainer}>
+                        {item.discountedPrice && (
+                          <Text style={styles.itemOldPrice}>
+                              ₫{item.originalPrice.toLocaleString('vi-VN')}
+                          </Text>
+                        )}
+                        <Text style={styles.itemPrice}>
+                            ₫{item.discountedPrice.toLocaleString('vi-VN')}
+                        </Text>
+                    </View>
                 </View>
+              ))}
 
-                <View style={styles.deliveryInfo}>
-                    <Text style={styles.deliveryStatus}>Giao hàng thành công</Text>
-                    <TouchableOpacity onPress={() => handleRateOrder(order.id)}>
-                        <Text style={styles.rateButton}>Rate now and get 200 coins</Text>
-                    </TouchableOpacity>
-                </View>
+              <View style={styles.orderSummary}>
+                  <Text style={styles.totalItems}>{order.items.length} items</Text>
+                  <Text style={styles.orderTotal}>
+                      Order Total: ₫{order.totalAmount.toLocaleString('vi-VN')}
+                  </Text>
+              </View>
 
-                <TouchableOpacity style={styles.rateOrderButton} onPress={() => handleRateOrder(order.id)}>
-                    <Text style={styles.rateButtonText}>Rate</Text>
-                </TouchableOpacity>
-            </View>
+              <View style={styles.deliveryInfo}>
+                  <Text style={styles.deliveryStatus}>Giao hàng thành công</Text>
+                  <TouchableOpacity onPress={() => handleRateOrder(order.id)}>
+                      <Text style={styles.rateButton}>Rate now and get 200 coins</Text>
+                  </TouchableOpacity>
+              </View>
+
+              <TouchableOpacity style={styles.rateOrderButton} onPress={() => handleRateOrder(order.id)}>
+                  <Text style={styles.rateButtonText}>Rate</Text>
+              </TouchableOpacity>
+          </View>
         );
     };
 
     return (
-        <View style={styles.container}>
-            <ScrollView contentContainerStyle={styles.scrollContainer}>
-                <Text style={styles.heading}>My Purchases</Text>
+      <View style={styles.container}>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+              <Text style={styles.heading}>My Purchases</Text>
 
-                {/* Tabs */}
-                <View style={styles.tabContainer}>
-                    {['All', 'Paid', 'Failed', 'Refunded'].map((tab) => (
-                        <TouchableOpacity
-                            key={tab}
-                            style={[
-                                styles.tabButton,
-                                activeTab === tab && styles.activeTabButton,
-                            ]}
-                            onPress={() => setActiveTab(tab)}
+              {/* Tabs */}
+              <View style={styles.tabContainer}>
+                  {['All', 'Paid', 'Failed', 'Refunded'].map((tab) => (
+                    <TouchableOpacity
+                      key={tab}
+                      style={[
+                          styles.tabButton,
+                          activeTab === tab && styles.activeTabButton,
+                      ]}
+                      onPress={() => setActiveTab(tab)}
+                    >
+                        <Text
+                          style={[
+                              styles.tabButtonText,
+                              activeTab === tab && styles.activeTabButtonText,
+                          ]}
                         >
-                            <Text
-                                style={[
-                                    styles.tabButtonText,
-                                    activeTab === tab && styles.activeTabButtonText,
-                                ]}
-                            >
-                                {tab}
-                            </Text>
-                        </TouchableOpacity>
-                    ))}
-                </View>
+                            {tab}
+                        </Text>
+                    </TouchableOpacity>
+                  ))}
+              </View>
 
-                {/* Orders List */}
-                {loading ? (
-                    <View style={styles.loader}>
-                        <Text>Loading orders...</Text>
-                    </View>
-                ) : (
-                    <View style={styles.ordersList}>
-                        {orders.length === 0 ? (
-                            <Text style={styles.emptyOrdersText}>
-                                No orders found.
-                            </Text>
-                        ) : (
-                            orders
-                                .filter((order) => order.status === activeTab)
-                                .map(renderOrderItem)
-                        )}
-                    </View>
-                )}
-            </ScrollView>
-        </View>
+              {/* Total Amount */}
+              <View style={styles.totalAmountContainer}>
+                  <Text style={styles.totalAmountText}>
+                      {totalAmount !== null
+                        ? `Total Amount for ${activeTab} orders: ₫${totalAmount.toLocaleString('vi-VN')}`
+                        : 'Fetching total amount...'}
+                  </Text>
+              </View>
+
+              {/* Orders List */}
+              {loading ? (
+                <View style={styles.loader}>
+                    <Text>Loading orders...</Text>
+                </View>
+              ) : (
+                <View style={styles.ordersList}>
+                    {orders.length === 0 ? (
+                      <Text style={styles.emptyOrdersText}>
+                          No orders found.
+                      </Text>
+                    ) : (
+                      orders
+                        .filter((order) => order.status === activeTab)
+                        .map(renderOrderItem)
+                    )}
+                </View>
+              )}
+          </ScrollView>
+      </View>
     );
 };
 
@@ -302,6 +331,14 @@ const styles = StyleSheet.create({
     rateButtonText: {
         color: '#fff',
         fontWeight: 'bold',
+    },
+    totalAmountContainer: {
+        marginVertical: 10,
+    },
+    totalAmountText: {
+        fontSize: 16,
+        fontWeight: 'bold',
+        color: '#FF4500',
     },
 });
 
