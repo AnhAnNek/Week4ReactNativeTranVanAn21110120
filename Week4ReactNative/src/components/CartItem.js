@@ -3,6 +3,9 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { FontAwesome } from '@expo/vector-icons';
 
 const CartItem = ({ cartItem, handleRemoveFromCart }) => {
+
+    console.log(`cartItem: ${cartItem.id}`);
+
     return (
         <View style={styles.container} key={cartItem.id}>
             <View style={styles.detailsContainer}>
