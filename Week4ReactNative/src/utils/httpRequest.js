@@ -12,8 +12,9 @@ const httpRequest = axios.create({
 httpRequest.interceptors.request.use(
   async config => {
     const token = await getToken();
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
+    const resolvedToken = await token;
+    if (resolvedToken) {
+      config.headers.Authorization = `Bearer ${resolvedToken}`;
     }
     return config;
   },
@@ -71,7 +72,16 @@ export const put = async (path, data, options = {}) => {
   }
 };
 
-
+export const del = async (path, options = {}) => {
+  try {
+    return await httpRequest.delete(path, options);
+  } catch (e) {
+    console.error(`Error deleting data from ${path}:`, e?.message);
+    const errorResponse = e?.response?.data;
+    const errorMsg = errorResponse?.message || 'An unknown error occurred';
+    throw new Error(errorMsg);
+  }
+};
 export const handleResponse = (response, successCode) => {
   return response?.status === successCode ? response.data : null;
 };

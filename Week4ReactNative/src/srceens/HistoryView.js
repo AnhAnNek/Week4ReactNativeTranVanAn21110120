@@ -7,14 +7,15 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  TextInput,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // For FontAwesome icons
-import courseService from '../services/courseService'; // Import the API service
-import authService from '../services/authService';
-import favoriteService from '../services/favouriteService';
-import {useNavigation} from '@react-navigation/native'; // Import useNavigation
+import Icon from 'react-native-vector-icons/FontAwesome';
+import courseService from '../services/courseService';
+import IconR from 'react-native-vector-icons/Ionicons';
+import {useNavigation} from '@react-navigation/native';
+import {ScrollView} from 'react-native-gesture-handler';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// Component to display the star rating
 const Rating = ({rating}) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 !== 0;
@@ -42,16 +43,9 @@ const Rating = ({rating}) => {
   return <View style={styles.ratingContainer}>{stars}</View>;
 };
 
-// Component to render each course
-const CourseItem = ({course}) => {
-  const navigation = useNavigation(); // Use navigation hook
-
-  const handleCoursePress = () => {
-    // Navigate to 'CourseDetail' screen and pass the course as a parameter
-    navigation.navigate('CourseDetail', {course});
-  };
+const CourseItem = ({course, onPress}) => {
   return (
-    <TouchableOpacity onPress={handleCoursePress}>
+    <TouchableOpacity onPress={onPress}>
       <View style={styles.courseContainer}>
         <Image
           source={{uri: course?.imagePreview}}
@@ -77,49 +71,32 @@ const CourseItem = ({course}) => {
   );
 };
 
-// Main Wishlist component
-const Wishlist = () => {
-  const [courses, setCourses] = useState([]);
+const HistoryViewCourse = () => {
+  const [historyCourses, setHistoryCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const navigation = useNavigation();
 
-  // Fetch courses from the API
-  const fetchCourses = async () => {
+  // Lấy danh sách khóa học từ AsyncStorage
+  const fetchHistoryCourses = async () => {
     try {
-      console.log('Fetching courses...');
-      const fetchedCourses = await favoriteService.getAllFavorites(0, 8);
-      console.log('Fetched courses:', fetchedCourses);
-      setCourses(fetchedCourses.content || []); // Fallback to an empty array if no data
+      const history = await AsyncStorage.getItem('courseHistory');
+      const historyArray = history ? JSON.parse(history) : [];
+      setHistoryCourses(historyArray);
     } catch (error) {
-      console.error('Error fetching courses:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUserByToken = async () => {
-    setLoading(true);
-    try {
-      const userData = await authService.getCurUser();
-      setUser(userData);
-    } catch (error) {
-      errorToast('An error occurred while fetching user data.');
+      console.error('Lỗi khi lấy danh sách khóa học từ lịch sử:', error);
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchUserByToken();
+    fetchHistoryCourses();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchCourses();
-    }
-  }, [user]);
+  const goToCourseDetail = course => {
+    navigation.navigate('CourseDetail', {course});
+  };
 
-  // Show loading spinner while fetching data
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -129,22 +106,41 @@ const Wishlist = () => {
   }
 
   return (
-    <View style={styles.container}>
-      <FlatList
-        data={courses}
-        renderItem={({item}) => <CourseItem course={item} />}
-        keyExtractor={item => item.id.toString()}
-      />
-    </View>
+    <ScrollView
+      style={styles.container}
+      scrollEventThrottle={16}
+      scrollIndicatorInsets={{right: 1}}>
+      {historyCourses.map(course => (
+        <CourseItem
+          key={course.id}
+          course={course}
+          onPress={() => goToCourseDetail(course)}
+        />
+      ))}
+    </ScrollView>
   );
 };
-
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
     padding: 10,
+  },
+  searchBarContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    padding: 10,
+    borderRadius: 8,
+    marginVertical: 10,
+    borderColor: '#ccc',
+    borderWidth: 1,
+  },
+  searchBar: {
+    flex: 1,
+    marginLeft: 10,
+    color: '#000',
+    fontSize: 16,
   },
   courseContainer: {
     flexDirection: 'row',
@@ -211,4 +207,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Wishlist;
+export default HistoryViewCourse;

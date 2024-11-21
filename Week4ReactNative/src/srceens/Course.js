@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,7 @@ import courseService from '../services/courseService';
 
 const DEFAULT_SIZE = 8;
 
-const CourseScreen = ({ navigation }) => {
+const CourseScreen = ({navigation}) => {
   const [courses, setCourses] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [price, setPrice] = useState('');
@@ -28,7 +28,7 @@ const CourseScreen = ({ navigation }) => {
   const loadFilteredCourses = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const newCourses = await courseService.getCourseByTopic({ topicId: 1 });
+      const newCourses = await courseService.getCourseByTopic({topicId: 1});
       setHasMore(newCourses.length >= DEFAULT_SIZE);
       setCourses(newCourses);
       setPageNumber(pageNumber);
@@ -43,7 +43,7 @@ const CourseScreen = ({ navigation }) => {
   const initCourses = async () => {
     setLoading(true);
     try {
-      const newCourses = await courseService.getCourse({ type: 'new' });
+      const newCourses = await courseService.getCourse({type: 'new'});
       setHasMore(newCourses.length >= DEFAULT_SIZE);
       setCourses(newCourses);
       setPageNumber(1);
@@ -59,8 +59,8 @@ const CourseScreen = ({ navigation }) => {
     initCourses();
   }, []);
 
-  const goToCourseDetail = (course) => {
-    navigation.navigate('CourseDetail', { course });
+  const goToCourseDetail = course => {
+    navigation.navigate('CourseDetail', {course});
   };
 
   const loadMoreCourses = async () => {
@@ -84,15 +84,19 @@ const CourseScreen = ({ navigation }) => {
       if (!searchQuery && price === '') {
         newCourses = await courseService.fetchCourses(page);
       } else {
-        newCourses = await courseService.fetchFilteredCourses(searchQuery, price, page);
+        newCourses = await courseService.fetchFilteredCourses(
+          searchQuery,
+          price,
+          page,
+        );
       }
 
       setHasMore(newCourses.length >= DEFAULT_SIZE);
-      setCourses((prevCourses) => [
+      setCourses(prevCourses => [
         ...prevCourses,
         ...newCourses.filter(
-          (newCourse) =>
-            !prevCourses.some((prevCourse) => prevCourse.id === newCourse.id)
+          newCourse =>
+            !prevCourses.some(prevCourse => prevCourse.id === newCourse.id),
         ),
       ]);
       setPageNumber(page);
@@ -116,10 +120,10 @@ const CourseScreen = ({ navigation }) => {
     loadFilteredCourses(1);
   };
 
-  const renderCourseItem = ({ item }) => (
+  const renderCourseItem = ({item}) => (
     <TouchableOpacity onPress={() => goToCourseDetail(item)}>
       <View style={styles.courseItem}>
-        <Image source={{ uri: item.imagePreview }} style={styles.courseImage} />
+        <Image source={{uri: item.imagePreview}} style={styles.courseImage} />
         <View style={styles.courseDetails}>
           <Text style={styles.courseTitle}>{item.title}</Text>
           <Text style={styles.courseInstructor}>{item.createdBy}</Text>
@@ -161,7 +165,7 @@ const CourseScreen = ({ navigation }) => {
       <FlatList
         data={courses}
         renderItem={renderCourseItem}
-        keyExtractor={(item) => item.id.toString()}
+        keyExtractor={item => item.id.toString()}
         contentContainerStyle={styles.courseList}
         onEndReached={loadMoreCourses}
         onEndReachedThreshold={0.5}

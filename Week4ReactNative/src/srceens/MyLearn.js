@@ -1,147 +1,132 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
-    View,
-    Text,
-    Image,
-    FlatList,
-    TouchableOpacity,
-    StyleSheet,
-    ActivityIndicator,
+  View,
+  Text,
+  Image,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
+import {useNavigation} from '@react-navigation/native';
 import courseService from '../services/courseService';
-import authService from "../services/authService";
+import authService from '../services/authService';
+import enrollmentService from '../services/enrollmentService';
 
 const MyLearn = () => {
-    const [courses, setCourses] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const navigation = useNavigation();
-    const [user, setUser] = useState(null);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const navigation = useNavigation();
+  const [user, setUser] = useState(null);
 
-    const fetchStudentCourses = async () => {
-        setLoading(true);
-        try {
-            const courseRequest = {
-                createdBy: user?.username,
-            };
-            const studentCourses = await courseService.getAllCourseOfStudent(courseRequest);
-            if (studentCourses) {
-                setCourses(studentCourses);
-            }
-        } catch (error) {
-            console.error('Error fetching student courses:', error.message);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const fetchStudentCourses = async () => {
+    setLoading(true);
+    try {
+      console.log('Fetching student courses...');
+      const studentCourses = await enrollmentService.getAllEnrolls(0, 8);
+      if (studentCourses) {
+        setCourses(studentCourses.content);
+      }
+    } catch (error) {
+      console.error('Error fetching student courses:', error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
+    fetchStudentCourses();
+  }, []);
 
-    const fetchUserByToken = async () => {
-        setLoading(true);
-        try {
-            const userData = await authService.getCurUser();
-            setUser(userData);
-        } catch (error) {
-            errorToast('An error occurred while fetching user data.');
-        } finally {
-            setLoading(false);
-        }
-    };
-    
-    useEffect(() => {
-        if (user) {
-            fetchStudentCourses();
-        }
-    }, [user]);
-
-    useEffect(() => {
-        fetchUserByToken();
-    }, []);
-
-    const renderCourseItem = ({ item }) => (
-        <View style={styles.courseContainer}>
-            <Image source={{ uri: item.imagePreview }} style={styles.courseImage} />
-            <View style={styles.courseInfo}>
-                <Text style={styles.courseTitle}>{item.title}</Text>
-                <Text style={styles.courseAuthor}>{item.teacher}</Text>
-                <View style={styles.progressBar}>
-                    <View style={[styles.progressFill, { width: `${item.progress || 0}%` }]} />
-                </View>
-                <Text style={styles.progressText}>{item.progress || 0}% complete</Text>
-                <TouchableOpacity onPress={() => navigation.navigate('PlayCourse', { courseId: item.id })}>
-                    <Text style={styles.startCourse}>Start course</Text>
-                </TouchableOpacity>
-            </View>
+  const renderCourseItem = ({item}) => (
+    <View style={styles.courseContainer}>
+      <Image source={{uri: item.imagePreview}} style={styles.courseImage} />
+      <View style={styles.courseInfo}>
+        <Text style={styles.courseTitle}>{item.title}</Text>
+        <Text style={styles.courseAuthor}>{item.teacher}</Text>
+        <View style={styles.progressBar}>
+          <View
+            style={[styles.progressFill, {width: `${item.progress || 0}%`}]}
+          />
         </View>
-    );
+        <Text style={styles.progressText}>{item.progress || 0}% complete</Text>
+        <TouchableOpacity
+          onPress={() =>
+            navigation.navigate('PlayCourse', {courseId: item.id})
+          }>
+          <Text style={styles.startCourse}>Start course</Text>
+        </TouchableOpacity>
+      </View>
+    </View>
+  );
 
-    return (
-        <View style={styles.container}>
-            {loading ? (
-                <ActivityIndicator size="large" color="#0000ff" />
-            ) : (
-                <FlatList
-                    data={courses}
-                    renderItem={renderCourseItem}
-                    keyExtractor={(item) => item.id.toString()}
-                />
-            )}
-        </View>
-    );
+  return (
+    <View style={styles.container}>
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={courses}
+          renderItem={renderCourseItem}
+          keyExtractor={item => item.id.toString()}
+        />
+      )}
+    </View>
+  );
 };
 
 // StyleSheet for the components
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        backgroundColor: '#fff',
-    },
-    courseContainer: {
-        flexDirection: 'row',
-        padding: 16,
-        borderBottomWidth: 1,
-        borderBottomColor: '#ccc',
-    },
-    courseImage: {
-        width: 60,
-        height: 60,
-        borderRadius: 8,
-        marginRight: 16,
-    },
-    courseInfo: {
-        flex: 1,
-        justifyContent: 'center',
-    },
-    courseTitle: {
-        fontSize: 16,
-        fontWeight: 'bold',
-    },
-    courseAuthor: {
-        fontSize: 14,
-        color: '#666',
-        marginBottom: 8,
-    },
-    startCourse: {
-        color: '#5E3BE1',
-        fontWeight: 'bold',
-        marginTop: 4,
-    },
-    progressBar: {
-        height: 4,
-        backgroundColor: '#eee',
-        borderRadius: 2,
-        overflow: 'hidden',
-        marginTop: 4,
-    },
-    progressFill: {
-        height: '100%',
-        backgroundColor: '#5E3BE1',
-    },
-    progressText: {
-        fontSize: 12,
-        color: '#666',
-        marginTop: 4,
-    },
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  courseContainer: {
+    flexDirection: 'row',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#ccc',
+  },
+  courseImage: {
+    width: 60,
+    height: 60,
+    borderRadius: 8,
+    marginRight: 16,
+  },
+  courseInfo: {
+    flex: 1,
+    justifyContent: 'center',
+  },
+  courseTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+  courseAuthor: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 8,
+  },
+  startCourse: {
+    color: '#5E3BE1',
+    fontWeight: 'bold',
+    marginTop: 4,
+  },
+  progressBar: {
+    height: 4,
+    backgroundColor: '#eee',
+    borderRadius: 2,
+    overflow: 'hidden',
+    marginTop: 4,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#5E3BE1',
+  },
+  progressText: {
+    fontSize: 12,
+    color: '#666',
+    marginTop: 4,
+  },
 });
 
 export default MyLearn;
