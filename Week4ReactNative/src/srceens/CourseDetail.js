@@ -8,6 +8,8 @@ import {
   TouchableOpacity,
   Animated,
   ActivityIndicator,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Ionicons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
@@ -15,7 +17,7 @@ import sectionService from '../services/sectionService';
 import lessonService from '../services/lessonService';
 import cartService from '../services/cartService'; // Import cartService
 import enrollmentService from '../services/enrollmentService'; // Import enrollmentService
-import {errorToast} from '../utils/methods';
+import {errorToast, successToast} from '../utils/methods';
 import Review from './Review';
 import authService from '../services/authService';
 import courseService from '../services/courseService';
@@ -78,6 +80,7 @@ const CourseDetail = ({route, navigation}) => {
       const result = await favouriteService.addFavourite(courseId);
       if (result) {
         setIsFavorite(true);
+        successToast('Course added to favorites.');
       } else {
         errorToast('Unable to add course to favorites.');
       }
@@ -94,6 +97,7 @@ const CourseDetail = ({route, navigation}) => {
       console.log('course.id', course.id);
       await favouriteService.deleteFavourite(course.id);
       setIsFavorite(false);
+      successToast('Course removed from favorites.');
     } catch (error) {
       errorToast('An error occurred while removing from favorites.');
     } finally {
@@ -161,6 +165,7 @@ const CourseDetail = ({route, navigation}) => {
       case 'add-to-cart':
         try {
           await cartService.addItemToCart(courseId);
+          successToast('Course added to cart');
           setButtonState('in-cart');
         } catch (error) {
           console.error('Error adding to cart:', error);
@@ -233,8 +238,13 @@ const CourseDetail = ({route, navigation}) => {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
 
+  const keyboardVerticalOffset = Platform.OS === 'ios' ? 5 : 0;
+
   return (
-    <View style={styles.container}>
+    <KeyboardAvoidingView
+      behavior="padding"
+      keyboardVerticalOffset={keyboardVerticalOffset}
+      style={styles.container}>
       <ScrollView
         style={styles.scrollView}
         onScroll={handleScroll}
@@ -261,7 +271,9 @@ const CourseDetail = ({route, navigation}) => {
           <Text style={styles.instructor}>
             Instructor: {course.ownerUsername}
           </Text>
-          <Text style={styles.instructor}>Student: {course.countStudent}</Text>
+          <Text style={styles.instructor}>
+            Student: {course.countStudent || 5}
+          </Text>
           <Text style={styles.lastUpdated}>Last updated: 2024/08</Text>
           <Text style={styles.languages}>
             Languages: English, Vietnamese, etc.
@@ -414,7 +426,7 @@ const CourseDetail = ({route, navigation}) => {
           </TouchableOpacity>
         </Animated.View>
       )}
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 

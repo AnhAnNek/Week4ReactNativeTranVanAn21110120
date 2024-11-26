@@ -8,11 +8,11 @@ import {
     ScrollView,
     Platform,
 } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker'; // Thư viện cho date picker
-import DropDownPicker from 'react-native-dropdown-picker'; // Thư viện cho dropdown
+import DateTimePicker from '@react-native-community/datetimepicker'; 
+import DropDownPicker from 'react-native-dropdown-picker'; 
 import { Button, Snackbar, ActivityIndicator } from 'react-native-paper';
 import { API_URL } from '../utils/constants';
-import { getToken } from '../utils/authUtils'; // Chỉ giữ lại import getToken
+import { getToken } from '../utils/authUtils'; 
 import { get, post } from '../utils/httpRequest';
 
 const Profile = ({ navigation }) => {
@@ -30,7 +30,6 @@ const Profile = ({ navigation }) => {
     const [snackbarMessage, setSnackbarMessage] = useState('');
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // Dropdown state for gender
     const [open, setOpen] = useState(false);
     const [sexOptions, setSexOptions] = useState([
         { label: 'Male', value: 'MALE' },
@@ -38,7 +37,6 @@ const Profile = ({ navigation }) => {
         { label: 'Other', value: 'OTHER' },
     ]);
 
-    // Fetch user data based on token
     const fetchUserByToken = async () => {
         setLoading(true);
         try {
@@ -104,7 +102,6 @@ const Profile = ({ navigation }) => {
 
     return (
         <ScrollView contentContainerStyle={styles.container}>
-            <Text style={styles.title}>Update Profile</Text>
 
             {loading ? (
                 <ActivityIndicator animating={true} />

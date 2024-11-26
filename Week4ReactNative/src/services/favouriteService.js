@@ -17,15 +17,6 @@ const getAllFavorites = async (page = 0, size = 8) => {
   return response.data;
 };
 
-const deleteFavourite = async courseId => {
-  const response = await del(`${SUFFIX_FAVOURITE_API_URL}/delete/${courseId}`);
-  if (response?.status !== 204) {
-    return null;
-  }
-
-  return response.data;
-};
-
 const addFavourite = async courseId => {
   const response = await post(`${SUFFIX_FAVOURITE_API_URL}/add/${courseId}`);
   if (response?.status !== 201) {
@@ -53,6 +44,15 @@ const checkCourseInFavourite = async courseId => {
   );
 
   if (response?.status !== 200) {
+    return null;
+  }
+
+  return response.data;
+};
+
+const deleteFavourite = async courseId => {
+  const response = await del(`${SUFFIX_FAVOURITE_API_URL}/delete/${courseId}`);
+  if (response?.status !== 204) {
     return null;
   }
 

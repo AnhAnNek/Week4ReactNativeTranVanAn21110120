@@ -32,7 +32,6 @@ const CouponList = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Your Coupons</Text>
       <FlatList
         data={coupons}
         keyExtractor={item => item.id}

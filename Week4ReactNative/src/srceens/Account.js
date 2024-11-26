@@ -1,5 +1,11 @@
 import React from 'react';
-import {View, Text, StyleSheet, TouchableOpacity} from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {getToken, removeToken} from '../utils/authUtils';
 import {get, post} from '../utils/httpRequest';
@@ -12,7 +18,7 @@ const Account = ({navigation}) => {
   };
 
   const handleHistory = () => {
-    navigation.navigate('History');
+    navigation.navigate('History Payment');
   };
 
   const handleChangePassword = () => {
@@ -24,7 +30,7 @@ const Account = ({navigation}) => {
   };
 
   const handleFavorites = () => {
-    navigation.navigate('Wishlist');
+    navigation.navigate('Favourite');
   };
 
   const handleLogout = () => {
@@ -33,14 +39,17 @@ const Account = ({navigation}) => {
   };
 
   const handleHistoryView = () => {
-    navigation.navigate('HistoryView');
+    navigation.navigate('History View');
   };
 
   const handleCoupon = () => {
     navigation.navigate('Coupon');
   };
+  const handleNotifications = () => {
+    navigation.navigate('Notifications');
+  };
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       {/* Avatar và tên */}
       <View style={styles.profileSection}>
         <View style={styles.avatar}>
@@ -58,7 +67,19 @@ const Account = ({navigation}) => {
             color="black"
             style={styles.icon}
           />
-          <Text style={styles.optionText}>Edit Profile</Text>
+          <Text style={styles.optionText}>Profile</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.optionItem}
+          onPress={handleNotifications}>
+          <Ionicons
+            name="notifications-outline"
+            size={24}
+            color="black"
+            style={styles.icon}
+          />
+          <Text style={styles.optionText}>Notification</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.optionItem} onPress={handleCoupon}>
@@ -133,15 +154,14 @@ const Account = ({navigation}) => {
           <Text style={styles.optionText}>Logout</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    flexGrow: 1,
     backgroundColor: '#fff',
-    alignItems: 'center',
     padding: 20,
   },
   profileSection: {

@@ -76,9 +76,23 @@ const Course = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const navigation = useNavigation(); // Sử dụng navigation
 
+  const [filterOptions, setFilterOptions] = useState({
+    title: null,
+    categoryIds: [],
+    page: 0,
+    size: 10,
+  });
   const fetchCourses = async () => {
     try {
-      const courseRequest = {createdBy: 'hungsam'};
+      const courseRequest = {
+        page: 1,
+        size: 10,
+        title: searchQuery || null,
+        categoryIds:
+          filterOptions.categoryIds.length > 0
+            ? filterOptions.categoryIds
+            : null,
+      };
       const fetchedCourses = await courseService.getCourse(courseRequest);
       setCourses(fetchedCourses || []);
     } catch (error) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, {useState, useEffect} from 'react';
 import {
   View,
   Text,
@@ -9,16 +9,19 @@ import {
   RefreshControl,
 } from 'react-native';
 import notificationService from '../services/notificationService';
-import { formatDate } from '../utils/methods';
-import { errorToast, successToast } from '../utils/methods';
-import authService from "../services/authService";
+import {formatDate} from '../utils/methods';
+import {errorToast, successToast} from '../utils/methods';
+import authService from '../services/authService';
+import {useNavigation} from '@react-navigation/native';
 
 const Notifications = () => {
   const [user, setUser] = useState(null); // Initially set to null
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const navigation = useNavigation();
 
+  // Fetch user by token
   const fetchUserByToken = async () => {
     setLoading(true);
     try {
@@ -31,6 +34,7 @@ const Notifications = () => {
     }
   };
 
+  // Fetch notifications when user is fetched
   useEffect(() => {
     fetchUserByToken();
   }, []);
@@ -41,15 +45,20 @@ const Notifications = () => {
     }
   }, [user]);
 
+  // Fetch notifications
   const fetchNotifications = async () => {
     if (loading) return; // Prevent fetching if already loading
 
     setLoading(true);
     try {
-      const response = await notificationService.getNotificationsByUsername(user.username, 0, 1000);
+      const response = await notificationService.getNotificationsByUsername(
+        user.username,
+        0,
+        1000,
+      );
       const newNotifications = response.content || []; // Fetch all notifications
       setNotifications(newNotifications);
-      console.log("Fetched notifications: ", newNotifications);
+      console.log('Fetched notifications: ', newNotifications);
     } catch (error) {
       errorToast('Error fetching notifications');
     } finally {
@@ -57,27 +66,41 @@ const Notifications = () => {
     }
   };
 
+  // Handle refresh
   const handleRefresh = async () => {
     setRefreshing(true);
     await fetchNotifications(); // Fetch notifications again
     setRefreshing(false);
   };
 
-  const handleNotificationClick = async (notificationId, read) => {
+  // Handle notification click
+  const handleNotificationClick = async (notificationId, read, message) => {
     if (!read) {
       try {
         await notificationService.markNotificationAsRead(notificationId);
         successToast('Notification marked as read');
-        setNotifications((prevNotifications) =>
-          prevNotifications.map((notification) =>
+        setNotifications(prevNotifications =>
+          prevNotifications.map(notification =>
             notification.id === notificationId
-              ? { ...notification, read: true }
-              : notification
-          )
+              ? {...notification, read: true}
+              : notification,
+          ),
         );
       } catch (error) {
         errorToast('Error marking notification as read');
       }
+    }
+
+    // Extract orderId from the message using regex
+    const regex = /the order '(\d+)'/; // Pattern to match 'the order ' and extract the number inside quotes
+    const match = message.match(regex);
+
+    if (match && match[1]) {
+      const orderId = match[1]; // Get the orderId from the regex match
+      // Navigate to OrderDetail screen with orderId
+      navigation.navigate('OrderDetail', {orderId});
+    } else {
+      errorToast('Order ID not found in message');
     }
   };
 
@@ -88,23 +111,30 @@ const Notifications = () => {
       ) : (
         <ScrollView
           style={styles.scrollView}
+          scrollEventThrottle={16}
+          scrollIndicatorInsets={{right: 1}}
           refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={handleRefresh}
-            />
-          }
-        >
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }>
           {notifications.length === 0 ? (
             <Text style={styles.noNotifications}>
               No notifications available.
             </Text>
           ) : (
-            notifications.map((notification) => (
+            notifications.map(notification => (
               <TouchableOpacity
                 key={notification.id}
-                style={[styles.notificationBox, { backgroundColor: notification.read ? '#f0f0f0' : '#fff' }]}
-                onPress={() => handleNotificationClick(notification.id, notification.read)}
+                style={[
+                  styles.notificationBox,
+                  {backgroundColor: notification.read ? '#f0f0f0' : '#fff'},
+                ]}
+                onPress={() =>
+                  handleNotificationClick(
+                    notification.id,
+                    notification.read,
+                    notification.message,
+                  )
+                } // Pass message to the handler
               >
                 <View style={styles.notificationContent}>
                   <Text>{notification.message}</Text>
@@ -113,8 +143,10 @@ const Notifications = () => {
                   </Text>
                 </View>
                 <Text
-                  style={[styles.badge, { color: notification.read ? 'green' : 'red' }]}
-                >
+                  style={[
+                    styles.badge,
+                    {color: notification.read ? 'green' : 'red'},
+                  ]}>
                   {notification.read ? 'READ' : 'UNREAD'}
                 </Text>
               </TouchableOpacity>
@@ -129,10 +161,10 @@ const Notifications = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 16,
     backgroundColor: '#fff',
   },
   scrollView: {
+    padding: 10,
     flex: 1,
   },
   noNotifications: {

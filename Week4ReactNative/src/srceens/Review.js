@@ -10,8 +10,9 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import reviewService from '../services/reviewService'; // Import your review service
+import reviewService from '../services/reviewService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {errorToast, successToast} from '../utils/methods';
 
 const RatingBar = ({percentage}) => (
   <View style={styles.ratingBarContainer}>
@@ -29,7 +30,7 @@ const StarRating = ({rating, setRating}) => (
         name={index < rating ? 'star' : 'star-o'}
         size={16}
         color="#f39c12"
-        onPress={() => setRating && setRating(index + 1)} // Allow rating selection if setRating is provided
+        onPress={() => setRating && setRating(index + 1)}
       />
     ))}
   </View>
@@ -121,8 +122,8 @@ const Review = ({courseId, buttonState}) => {
 
   const calculateAverageRating = reviews => {
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    const average = totalRating / (reviews.length || 1); // To avoid division by zero
-    setAverageRating(average.toFixed(1)); // Set the average rating (1 decimal place)
+    const average = totalRating / (reviews.length || 1);
+    setAverageRating(average.toFixed(1));
   };
 
   const handleAddReview = async () => {
@@ -138,7 +139,7 @@ const Review = ({courseId, buttonState}) => {
         courseId,
         rating: newRating,
         comment: newComment,
-        user: 'hungsam', // Replace with user info if available
+        user: 'hungsam',
       };
 
       const response = await reviewService.createReview(reviewRequest);
@@ -146,39 +147,34 @@ const Review = ({courseId, buttonState}) => {
       if (response) {
         const enrichedResponse = {
           ...response,
-          owner: 'hungsam', // Thêm user từ reviewRequest
+          owner: 'hungsam',
         };
-        // Sử dụng dữ liệu trả về từ API (response) để cập nhật danh sách reviews
         setReviews(prevReviews => [...prevReviews, enrichedResponse]);
 
-        // Tính toán lại các chỉ số đánh giá
         calculateRatingDistribution([...reviews, enrichedResponse]);
         calculateAverageRating([...reviews, enrichedResponse]);
         const newCoupon = {
-          id: Date.now().toString(), // Unique ID for coupon
-          code: `COUPON${Math.floor(Math.random() * 100000)}`, // Random coupon code
-          discount: Math.floor(Math.random() * 50) + 10, // Random discount between 10% and 60%
+          id: Date.now().toString(),
+          code: `COUPON${Math.floor(Math.random() * 100000)}`,
+          discount: Math.floor(Math.random() * 16) + 10,
         };
 
-        // Save coupon to AsyncStorage
         await saveCouponToStorage(newCoupon);
 
-        // Notify user about the new coupon
         Alert.alert(
           'Success',
           `Review added successfully! You received a coupon: ${newCoupon.code} (${newCoupon.discount}% off).`,
         );
-        // Reset form
+
         setNewComment('');
         setNewRating(0);
 
-        Alert.alert('Success', 'Review added successfully!');
+        successToast('Review added successfully!');
       } else {
-        Alert.alert('Error', 'Failed to add review.');
+        errorToast('Failed to add review.');
       }
     } catch (error) {
-      console.error('Error adding review:', error);
-      Alert.alert('Error', 'An error occurred while adding the review.');
+      errorToast('An error occurred while adding the review.');
     } finally {
       setSubmitting(false);
     }
@@ -208,7 +204,6 @@ const Review = ({courseId, buttonState}) => {
         </View>
       </View>
 
-      {/* Add Review Section - Display only for "start-course" or "continue-course" */}
       {(buttonState === 'start-course' ||
         buttonState === 'continue-course') && (
         <View style={styles.addReviewSection}>
