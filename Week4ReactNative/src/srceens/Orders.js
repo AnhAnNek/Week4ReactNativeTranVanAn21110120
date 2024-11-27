@@ -57,7 +57,6 @@ const Orders = () => {
 
     const handleRateOrder = (orderId) => {
         successToast(`Rate order ${orderId}`);
-        // Navigate to rate order screen (or trigger rating modal)
     };
 
     const renderOrderItem = (order) => {

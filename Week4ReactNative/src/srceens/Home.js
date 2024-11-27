@@ -1,19 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native';
-import { ActivityIndicator, Card, Snackbar, Text } from 'react-native-paper';
-import { API_URL } from '../utils/constants';
-import { getToken, removeToken } from '../utils/authUtils';
-import { get } from '../utils/httpRequest';
+import React, {useEffect, useState} from 'react';
+import {SafeAreaView} from 'react-native';
+import {ActivityIndicator, Card, Snackbar, Text} from 'react-native-paper';
+import {API_URL} from '../utils/constants';
+import {getToken, removeToken} from '../utils/authUtils';
+import {get} from '../utils/httpRequest';
 import tw from 'twrnc';
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {Ionicons} from '@expo/vector-icons';
 import Search from './Search';
 import BestSale from './BestSale';
 import MyLearn from './MyLearn';
 import Account from './Account';
-import Notifications from "./Notifications";
+import Notifications from './Notifications';
+import Message from './Message';
 
-function HomeScreen({ navigation }) {
+function HomeScreen({navigation}) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -24,7 +25,7 @@ function HomeScreen({ navigation }) {
     try {
       const tokenStr = await getToken();
       const response = await get(`${API_URL}/auth/get-user-by-token`, {
-        params: { tokenStr },
+        params: {tokenStr},
       });
       if (response.status === 200) {
         setUser(response.data);
@@ -99,33 +100,29 @@ function HomeScreen({ navigation }) {
   );
 }
 
-
 const Tab = createBottomTabNavigator();
 
 export default function Home() {
   return (
     <Tab.Navigator
-      screenOptions={({ route }) => ({
-        tabBarIcon: ({ focused, color, size }) => {
+      screenOptions={({route}) => ({
+        tabBarIcon: ({focused, color, size}) => {
           let iconName;
           if (route.name === 'Profile') {
             iconName = focused ? 'person' : 'person-outline';
           } else if (route.name === 'Course') {
             iconName = focused ? 'book' : 'book-outline';
-          }
-          else if (route.name === 'Home') {
+          } else if (route.name === 'Home') {
             iconName = focused ? 'home' : 'home-outline';
-          }
-          else if (route.name === 'My Learn') {
+          } else if (route.name === 'My Learn') {
             iconName = focused ? 'play' : 'play-outline';
-          }
-          else if (route.name === 'Notifications') {
+          } else if (route.name === 'Notifications') {
             iconName = focused ? 'notifications' : 'notifications-outline';
-          }
-          else if (route.name === 'Search') {
+          } else if (route.name === 'Messages') {
+            iconName = focused ? 'chatbox' : 'chatbox-outline';
+          } else if (route.name === 'Search') {
             iconName = focused ? 'search' : 'search-outline';
-          }
-          else if (route.name === 'Account') {
+          } else if (route.name === 'Account') {
             iconName = focused ? 'person' : 'person-outline';
           }
 
@@ -137,8 +134,8 @@ export default function Home() {
       <Tab.Screen name="Home" component={BestSale} />
       <Tab.Screen name="Search" component={Search} />
       <Tab.Screen name="My Learn" component={MyLearn} />
-      <Tab.Screen name="Notifications" component={Notifications} />
-      {/* <Tab.Screen name="Wishlist" component={Wishlist} /> */}
+      {/* <Tab.Screen name="Notifications" component={Notifications} /> */}
+      <Tab.Screen name="Messages" component={Message} />
       <Tab.Screen name="Account" component={Account} />
     </Tab.Navigator>
   );

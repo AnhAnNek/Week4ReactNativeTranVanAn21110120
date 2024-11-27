@@ -9,15 +9,12 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
-import courseService from '../services/courseService';
-import authService from '../services/authService';
 import enrollmentService from '../services/enrollmentService';
 
 const MyLearn = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
-  const [user, setUser] = useState(null);
 
   const fetchStudentCourses = async () => {
     setLoading(true);
@@ -38,27 +35,41 @@ const MyLearn = () => {
     fetchStudentCourses();
   }, []);
 
-  const renderCourseItem = ({item}) => (
-    <View style={styles.courseContainer}>
-      <Image source={{uri: item.imagePreview}} style={styles.courseImage} />
-      <View style={styles.courseInfo}>
-        <Text style={styles.courseTitle}>{item.title}</Text>
-        <Text style={styles.courseAuthor}>{item.teacher}</Text>
-        <View style={styles.progressBar}>
-          <View
-            style={[styles.progressFill, {width: `${item.progress || 0}%`}]}
-          />
+  const renderCourseItem = ({item}) => {
+    // Determine button text based on progress
+    let buttonText;
+    if (item.progress === 0) {
+      buttonText = 'Start Learning';
+    } else if (item.progress === 100) {
+      buttonText = 'Complete';
+    } else {
+      buttonText = 'Continue';
+    }
+
+    return (
+      <View style={styles.courseContainer}>
+        <Image source={{uri: item.imagePreview}} style={styles.courseImage} />
+        <View style={styles.courseInfo}>
+          <Text style={styles.courseTitle}>{item.title}</Text>
+          <Text style={styles.courseAuthor}>{item.teacher}</Text>
+          <View style={styles.progressBar}>
+            <View
+              style={[styles.progressFill, {width: `${item.progress || 0}%`}]}
+            />
+          </View>
+          <Text style={styles.progressText}>
+            {item.progress || 0}% complete
+          </Text>
+          <TouchableOpacity
+            onPress={() =>
+              navigation.navigate('PlayCourse', {courseId: item.id})
+            }>
+            <Text style={styles.startCourse}>{buttonText}</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.progressText}>{item.progress || 0}% complete</Text>
-        <TouchableOpacity
-          onPress={() =>
-            navigation.navigate('PlayCourse', {courseId: item.id})
-          }>
-          <Text style={styles.startCourse}>Start course</Text>
-        </TouchableOpacity>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -75,7 +86,6 @@ const MyLearn = () => {
   );
 };
 
-// StyleSheet for the components
 const styles = StyleSheet.create({
   container: {
     flex: 1,

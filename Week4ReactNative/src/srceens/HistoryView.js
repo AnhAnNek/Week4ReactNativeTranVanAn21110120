@@ -8,9 +8,10 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   TextInput,
+  Alert,
+  RefreshControl,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/FontAwesome';
-import courseService from '../services/courseService';
 import IconR from 'react-native-vector-icons/Ionicons';
 import {useNavigation} from '@react-navigation/native';
 import {ScrollView} from 'react-native-gesture-handler';
@@ -75,27 +76,58 @@ const HistoryViewCourse = () => {
   const [historyCourses, setHistoryCourses] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Lấy danh sách khóa học từ AsyncStorage
+  // Fetch the viewed courses from AsyncStorage
   const fetchHistoryCourses = async () => {
     try {
       const history = await AsyncStorage.getItem('courseHistory');
       const historyArray = history ? JSON.parse(history) : [];
       setHistoryCourses(historyArray);
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách khóa học từ lịch sử:', error);
+      console.error('Error fetching course history:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchHistoryCourses();
-  }, []);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchHistoryCourses(); // Fetch notifications again
+    setRefreshing(false);
+  };
 
+  // Clear the course history
+  const clearHistory = async () => {
+    try {
+      // Show a confirmation dialog
+      Alert.alert(
+        'Clear History',
+        'Are you sure you want to delete the entire course history?',
+        [
+          {text: 'Cancel', style: 'cancel'},
+          {
+            text: 'OK',
+            onPress: async () => {
+              await AsyncStorage.removeItem('courseHistory');
+              setHistoryCourses([]); // Update state to clear the UI
+            },
+          },
+        ],
+      );
+    } catch (error) {
+      console.error('Error clearing course history:', error);
+    }
+  };
+
+  // Navigate to the course details screen
   const goToCourseDetail = course => {
     navigation.navigate('CourseDetail', {course});
   };
+
+  useEffect(() => {
+    fetchHistoryCourses();
+  }, []);
 
   if (loading) {
     return (
@@ -106,41 +138,55 @@ const HistoryViewCourse = () => {
   }
 
   return (
-    <ScrollView
-      style={styles.container}
-      scrollEventThrottle={16}
-      scrollIndicatorInsets={{right: 1}}>
-      {historyCourses.map(course => (
-        <CourseItem
-          key={course.id}
-          course={course}
-          onPress={() => goToCourseDetail(course)}
-        />
-      ))}
-    </ScrollView>
+    <View style={styles.container}>
+      {/* Clear History Button */}
+
+      <ScrollView
+        style={styles.scrollContainer}
+        scrollEventThrottle={16}
+        scrollIndicatorInsets={{right: 1}}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }>
+        {historyCourses.length > 0 ? (
+          historyCourses.map(course => (
+            <CourseItem
+              key={course.id}
+              course={course}
+              onPress={() => goToCourseDetail(course)}
+            />
+          ))
+        ) : (
+          <Text style={styles.noHistoryText}>No viewed courses found.</Text>
+        )}
+      </ScrollView>
+      <TouchableOpacity style={styles.clearButton} onPress={clearHistory}>
+        <Text style={styles.clearButtonText}>Clear History</Text>
+      </TouchableOpacity>
+    </View>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    padding: 10,
   },
-  searchBarContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
+  scrollContainer: {
+    padding: 10,
+    flex: 1,
+  },
+  clearButton: {
+    backgroundColor: '#ff4d4d',
     padding: 10,
     borderRadius: 8,
-    marginVertical: 10,
-    borderColor: '#ccc',
-    borderWidth: 1,
+    alignItems: 'center',
+    marginBottom: 10,
   },
-  searchBar: {
-    flex: 1,
-    marginLeft: 10,
-    color: '#000',
+  clearButtonText: {
+    color: '#fff',
     fontSize: 16,
+    fontWeight: 'bold',
   },
   courseContainer: {
     flexDirection: 'row',
@@ -204,6 +250,12 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  noHistoryText: {
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#666',
+    marginTop: 20,
   },
 });
 

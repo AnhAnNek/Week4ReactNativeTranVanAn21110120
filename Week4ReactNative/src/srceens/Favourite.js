@@ -7,14 +7,16 @@ import {
   FlatList,
   TouchableOpacity,
   ActivityIndicator,
+  ScrollView,
+  Alert,
+  TextInput,
+  RefreshControl,
 } from 'react-native';
-import Icon from 'react-native-vector-icons/FontAwesome'; // For FontAwesome icons
-import courseService from '../services/courseService'; // Import the API service
-import authService from '../services/authService';
+import Icon from 'react-native-vector-icons/FontAwesome';
 import favoriteService from '../services/favouriteService';
-import {useNavigation} from '@react-navigation/native'; // Import useNavigation
+import {useNavigation} from '@react-navigation/native';
+import {errorToast, successToast} from '../utils/methods';
 
-// Component to display the star rating
 const Rating = ({rating}) => {
   const fullStars = Math.floor(rating);
   const halfStar = rating % 1 !== 0;
@@ -42,14 +44,27 @@ const Rating = ({rating}) => {
   return <View style={styles.ratingContainer}>{stars}</View>;
 };
 
-// Component to render each course
-const CourseItem = ({course}) => {
-  const navigation = useNavigation(); // Use navigation hook
+const CourseItem = ({course, onDelete}) => {
+  const navigation = useNavigation();
 
   const handleCoursePress = () => {
-    // Navigate to 'CourseDetail' screen and pass the course as a parameter
     navigation.navigate('CourseDetail', {course});
   };
+
+  const handleDeletePress = () => {
+    Alert.alert(
+      'Confirm Deletion',
+      'Are you sure you want to remove this item from your favourite?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {
+          text: 'Ok',
+          onPress: () => onDelete(course?.id),
+        },
+      ],
+    );
+  };
+
   return (
     <TouchableOpacity onPress={handleCoursePress}>
       <View style={styles.courseContainer}>
@@ -72,54 +87,79 @@ const CourseItem = ({course}) => {
             </TouchableOpacity>
           )}
         </View>
+        {/* Delete Button */}
+        <TouchableOpacity onPress={handleDeletePress}>
+          <Icon name="trash" size={20} color="#ff0000" />
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );
 };
 
-// Main Wishlist component
-const Wishlist = () => {
+const Favourite = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState(''); // State for search query
+  const [filteredCourses, setFilteredCourses] = useState([]); // State for filtered courses
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Fetch courses from the API
   const fetchCourses = async () => {
     try {
-      console.log('Fetching courses...');
       const fetchedCourses = await favoriteService.getAllFavorites(0, 8);
-      console.log('Fetched courses:', fetchedCourses);
-      setCourses(fetchedCourses.content || []); // Fallback to an empty array if no data
+      setCourses(fetchedCourses.content || []);
+      setFilteredCourses(fetchedCourses.content || []); // Initialize filtered courses
     } catch (error) {
-      console.error('Error fetching courses:', error);
+      errorToast('Error fetching courses:', error);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchUserByToken = async () => {
-    setLoading(true);
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchCourses(); // Fetch notifications again
+    setRefreshing(false);
+  };
+
+  const handleDeleteCourse = async courseId => {
     try {
-      const userData = await authService.getCurUser();
-      setUser(userData);
+      setLoading(true);
+      const result = await favoriteService.deleteFavourite(courseId);
+      if (result !== null) {
+        setCourses(prevCourses =>
+          prevCourses.filter(course => course.id !== courseId),
+        );
+        setFilteredCourses(prevCourses =>
+          prevCourses.filter(course => course.id !== courseId),
+        );
+        successToast('Course removed from wishlist.');
+      } else {
+        errorToast('Failed to remove course from wishlist.');
+      }
     } catch (error) {
-      errorToast('An error occurred while fetching user data.');
+      console.error('Error deleting course:', error);
+      errorToast('An error occurred while removing the course.');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSearch = text => {
+    setSearchQuery(text);
+    if (text === '') {
+      setFilteredCourses(courses);
+    } else {
+      const filtered = courses.filter(course =>
+        course.title.toLowerCase().includes(text.toLowerCase()),
+      );
+      setFilteredCourses(filtered);
     }
   };
 
   useEffect(() => {
-    fetchUserByToken();
+    fetchCourses();
   }, []);
 
-  useEffect(() => {
-    if (user) {
-      fetchCourses();
-    }
-  }, [user]);
-
-  // Show loading spinner while fetching data
   if (loading) {
     return (
       <View style={styles.loaderContainer}>
@@ -130,24 +170,51 @@ const Wishlist = () => {
 
   return (
     <View style={styles.container}>
-      <FlatList
-        data={courses}
-        renderItem={({item}) => <CourseItem course={item} />}
-        keyExtractor={item => item.id.toString()}
+      {/* Search Bar */}
+      <TextInput
+        style={styles.searchBar}
+        placeholder="Search courses..."
+        value={searchQuery}
+        onChangeText={handleSearch}
       />
+      <ScrollView
+        style={styles.scrollContainer}
+        scrollEventThrottle={16}
+        scrollIndicatorInsets={{right: 1}}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+        }>
+        {filteredCourses.map(course => (
+          <CourseItem
+            key={course.id.toString()}
+            course={course}
+            onDelete={handleDeleteCourse}
+          />
+        ))}
+      </ScrollView>
     </View>
   );
 };
 
-// Styles
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollContainer: {
     padding: 10,
+  },
+  searchBar: {
+    height: 40,
+    borderColor: '#ccc',
+    borderWidth: 1,
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    margin: 10,
   },
   courseContainer: {
     flexDirection: 'row',
+    alignItems: 'center',
     marginBottom: 20,
   },
   courseImage: {
@@ -211,4 +278,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default Wishlist;
+export default Favourite;
