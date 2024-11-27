@@ -51,19 +51,19 @@ function App() {
           component={InputOtpToUpdateProfile}
         />
         <Stack.Screen name="Course" component={Course} />
-        <Stack.Screen name="CourseDetail" component={CourseDetail} />
+        <Stack.Screen name="Course Detail" component={CourseDetail} />
         <Stack.Screen name="Cart" component={Cart} />
         <Stack.Screen name="Orders" component={Orders} />
-        <Stack.Screen name="PlayCourse" component={PlayCourse} />
-        <Stack.Screen name="MyLearning" component={MyLearning} />
-        <Stack.Screen name="ChangePassword" component={ChangePassword} />
+        <Stack.Screen name="Play Course" component={PlayCourse} />
+        <Stack.Screen name="My Learning" component={MyLearning} />
+        <Stack.Screen name="Change Password" component={ChangePassword} />
         <Stack.Screen name="Favourite" component={Favourite} />
         <Stack.Screen name="History Payment" component={History} />
-        <Stack.Screen name="OrderDetail" component={OrderDetail} />
-        <Stack.Screen name="PendingPayment" component={PendingPayment} />
+        <Stack.Screen name="Order Detail" component={OrderDetail} />
+        <Stack.Screen name="Pending Payment" component={PendingPayment} />
         <Stack.Screen name="History View" component={HistoryView} />
         <Stack.Screen name="Coupon" component={Coupon} />
-        <Stack.Screen name="MessageDetail" component={MessageDetail} />
+        <Stack.Screen name="Message Detail" component={MessageDetail} />
         <Stack.Screen name="Notifications" component={Notifications} />
       </Stack.Navigator>
       <Toast />

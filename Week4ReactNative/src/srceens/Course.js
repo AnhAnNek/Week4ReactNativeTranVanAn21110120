@@ -60,7 +60,7 @@ const CourseScreen = ({navigation}) => {
   }, []);
 
   const goToCourseDetail = course => {
-    navigation.navigate('CourseDetail', {course});
+    navigation.navigate('Course Detail', {course});
   };
 
   const loadMoreCourses = async () => {

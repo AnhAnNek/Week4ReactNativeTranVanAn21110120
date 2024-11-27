@@ -48,7 +48,7 @@ const CourseItem = ({course, onDelete}) => {
   const navigation = useNavigation();
 
   const handleCoursePress = () => {
-    navigation.navigate('CourseDetail', {course});
+    navigation.navigate('Course Detail', {course});
   };
 
   const handleDeletePress = () => {

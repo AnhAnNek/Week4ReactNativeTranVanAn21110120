@@ -1,17 +1,42 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
+  RefreshControl,
 } from 'react-native';
 import {Ionicons} from '@expo/vector-icons';
 import {getToken, removeToken} from '../utils/authUtils';
-import {get, post} from '../utils/httpRequest';
+import authService from '../services/authService';
+import {errorToast, successToast} from '../utils/methods';
 
 const Account = ({navigation}) => {
-  const userName = 'Xuan Hung';
+  const [user, setUser] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchUserByToken(); // Fetch notifications again
+    setRefreshing(false);
+  };
+
+  const fetchUserByToken = async () => {
+    setLoading(true);
+    try {
+      const userData = await authService.getCurUser();
+      setUser(userData);
+    } catch (error) {
+      errorToast('An error occurred while fetching user data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const userName = user?.username;
+  const fullName = user?.fullName;
 
   const handleEditProfile = () => {
     navigation.navigate('Profile');
@@ -49,13 +74,19 @@ const Account = ({navigation}) => {
     navigation.navigate('Notifications');
   };
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }>
       {/* Avatar và tên */}
       <View style={styles.profileSection}>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>XH</Text>
+          <Text style={styles.avatarText}>
+            {fullName ? fullName.charAt(0).toUpperCase() : ''}
+          </Text>
         </View>
-        <Text style={styles.userName}>{userName}</Text>
+        <Text style={styles.userName}>{fullName}</Text>
       </View>
 
       {/* Danh sách các mục */}

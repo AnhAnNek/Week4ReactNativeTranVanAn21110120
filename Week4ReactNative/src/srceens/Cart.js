@@ -122,7 +122,7 @@ const Cart = ({navigation}) => {
       await AsyncStorage.setItem('coupons', JSON.stringify(updatedCoupons));
       successToast('Checkout successful! Redirecting to pending payment...');
 
-      navigation.navigate('PendingPayment', {orderId});
+      navigation.navigate('Pending Payment', {orderId});
     } catch (error) {
       console.error(error?.message);
       errorToast('Error during checkout. Please try again.');

@@ -13,6 +13,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import reviewService from '../services/reviewService';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {errorToast, successToast} from '../utils/methods';
+import authService from '../services/authService';
 
 const RatingBar = ({percentage}) => (
   <View style={styles.ratingBarContainer}>
@@ -49,6 +50,7 @@ const ReviewItem = ({item}) => (
 const Review = ({courseId, buttonState}) => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
   const [ratingData, setRatingData] = useState([
     {stars: 5, percentage: 0},
     {stars: 4, percentage: 0},
@@ -62,6 +64,18 @@ const Review = ({courseId, buttonState}) => {
   const [newComment, setNewComment] = useState('');
   const [newRating, setNewRating] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  const fetchUserByToken = async () => {
+    setLoading(true);
+    try {
+      const userData = await authService.getCurUser();
+      setUser(userData);
+    } catch (error) {
+      errorToast('An error occurred while fetching user data.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchReviews = async () => {
@@ -81,7 +95,7 @@ const Review = ({courseId, buttonState}) => {
         setLoading(false);
       }
     };
-
+    fetchUserByToken();
     fetchReviews();
   }, [courseId]);
 
@@ -139,7 +153,7 @@ const Review = ({courseId, buttonState}) => {
         courseId,
         rating: newRating,
         comment: newComment,
-        user: 'hungsam',
+        user: user.username,
       };
 
       const response = await reviewService.createReview(reviewRequest);
@@ -147,7 +161,7 @@ const Review = ({courseId, buttonState}) => {
       if (response) {
         const enrichedResponse = {
           ...response,
-          owner: 'hungsam',
+          owner: user.username,
         };
         setReviews(prevReviews => [...prevReviews, enrichedResponse]);
 

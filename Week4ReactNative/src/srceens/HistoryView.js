@@ -122,7 +122,7 @@ const HistoryViewCourse = () => {
 
   // Navigate to the course details screen
   const goToCourseDetail = course => {
-    navigation.navigate('CourseDetail', {course});
+    navigation.navigate('Course Detail', {course});
   };
 
   useEffect(() => {

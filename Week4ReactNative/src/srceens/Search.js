@@ -112,7 +112,7 @@ const Course = () => {
 
   const goToCourseDetail = course => {
     saveCourseToHistory(course);
-    navigation.navigate('CourseDetail', {course});
+    navigation.navigate('Course Detail', {course});
   };
 
   const saveCourseToHistory = async course => {

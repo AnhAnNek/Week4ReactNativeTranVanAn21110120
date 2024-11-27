@@ -20,10 +20,8 @@ import enrollmentService from '../services/enrollmentService'; // Import enrollm
 import {errorToast, successToast} from '../utils/methods';
 import Review from './Review';
 import authService from '../services/authService';
-import courseService from '../services/courseService';
 import favouriteService from '../services/favouriteService';
 import RenderHTML from 'react-native-render-html';
-import RichEditor from 'react-native-pell-rich-editor';
 
 const Rating = ({rating}) => {
   const fullStars = Math.floor(rating);
@@ -173,7 +171,7 @@ const CourseDetail = ({route, navigation}) => {
         break;
       case 'start-course':
       case 'continue-course':
-        navigation.navigate('PlayCourse', {courseId});
+        navigation.navigate('Play Course', {courseId});
         break;
       case 'in-cart':
         navigation.navigate('Cart');
@@ -235,8 +233,12 @@ const CourseDetail = ({route, navigation}) => {
   };
 
   const handleChatButtonPress = () => {
-    // Navigate to the chat screen or trigger chat functionality
-    navigation.navigate('ChatScreen'); // Change 'ChatScreen' to the actual screen name
+    navigation.navigate('Message Detail', {
+      senderUsername: user.username || '',
+      recipientUsername: course?.owner?.username || '',
+      recipientAvatar: course?.owner?.avatarPath || '',
+      recipientFullName: course?.owner?.fullName || '',
+    });
   };
 
   if (loading) {

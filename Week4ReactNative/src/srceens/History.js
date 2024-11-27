@@ -110,7 +110,7 @@ const OrderScreen = () => {
           <TouchableOpacity
             key={order.id}
             style={styles.orderCard}
-            onPress={() => navigation.navigate('OrderDetail', { orderId: order.id })}
+            onPress={() => navigation.navigate('Order Detail', { orderId: order.id })}
           >
               <Text style={styles.orderId}>Order ID: {order.id}</Text>
               {/* Format the total amount in VND */}
