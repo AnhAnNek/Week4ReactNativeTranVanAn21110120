@@ -2,7 +2,7 @@ import {get, post, put} from '../utils/httpRequest';
 
 const SUFFIX_ENROLLMENT_API_URL = '/enrollments';
 
-const getAllEnrolls = async (page = 0, size = 10) => {
+const getAllEnrolls = async (page = 0, size = 100) => {
   const path = `${SUFFIX_ENROLLMENT_API_URL}`;
   const response = await get(path, {
     params: {

@@ -3,6 +3,7 @@ import { SafeAreaView, StyleSheet, View, Text, TextInput, TouchableOpacity, Aler
 import { API_URL } from '../utils/constants';
 import { post } from '../utils/httpRequest';
 import {saveToken, saveUsername} from '../utils/authUtils';
+import {errorToast, successToast} from '../utils/methods';
 
 const InputOtpToLogin = ({ route, navigation }) => {
   const { username } = route.params;
@@ -24,19 +25,19 @@ const InputOtpToLogin = ({ route, navigation }) => {
           console.log(`tokenStr: ${loginResponse?.tokenStr}`);
           await saveToken(loginResponse?.tokenStr);
           await saveUsername(loginResponse?.user?.username);
-          Alert.alert('Success', 'OTP verified successfully!');
+          successToast('OTP verified successfully!');
           navigation.navigate('Home');
         } else {
-          Alert.alert('Error', 'Invalid OTP, please try again.');
+          errorToast('Invalid OTP, please try again.');
         }
       } catch (error) {
         console.error(error?.message);
-        Alert.alert('Error', error?.message);
+        errorToast('Error verifying OTP, please try again.');
       } finally {
         setLoading(false);
       }
     } else {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
+      errorToast('Please enter a valid 6-digit OTP.');
     }
   };
 

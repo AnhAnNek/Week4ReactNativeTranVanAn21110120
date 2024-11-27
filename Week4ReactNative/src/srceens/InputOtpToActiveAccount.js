@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { API_URL } from '../utils/constants';
 import { put } from '../utils/httpRequest';
+import {errorToast, successToast} from '../utils/methods';
 
 const InputOtpToActiveAccount = ({ route, navigation }) => {
   const { username } = route.params;
@@ -10,7 +11,7 @@ const InputOtpToActiveAccount = ({ route, navigation }) => {
 
   const handleSubmit = async () => {
     if (otp.length !== 6) {
-      Alert.alert('Error', 'Please enter a valid 6-digit OTP.');
+      errorToast('Please enter a valid 6-digit OTP.');
       return;
     }
 
@@ -20,13 +21,13 @@ const InputOtpToActiveAccount = ({ route, navigation }) => {
       const response = await put(`${API_URL}/auth/active-account`, activeAccountRequest);
 
       if (response.status === 200) {
-        Alert.alert('Success', 'Account activated successfully!');
+        successToast('Account activated successfully!');
         navigation.navigate('Login');
       } else {
-        Alert.alert('Error', 'Invalid OTP, please try again.');
+        errorToast('Invalid OTP, please try again.');
       }
     } catch (error) {
-      Alert.alert('Error', error?.message);
+      errorToast('Error activating account, please try again.');
     } finally {
       setLoading(false);
     }

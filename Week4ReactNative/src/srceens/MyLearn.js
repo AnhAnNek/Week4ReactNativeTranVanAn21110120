@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import {useNavigation} from '@react-navigation/native';
 import enrollmentService from '../services/enrollmentService';
@@ -15,12 +16,13 @@ const MyLearn = () => {
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
   const navigation = useNavigation();
+  const [refreshing, setRefreshing] = useState(false);
 
   const fetchStudentCourses = async () => {
     setLoading(true);
     try {
       console.log('Fetching student courses...');
-      const studentCourses = await enrollmentService.getAllEnrolls(0, 8);
+      const studentCourses = await enrollmentService.getAllEnrolls(0, 100);
       if (studentCourses) {
         setCourses(studentCourses.content);
       }
@@ -29,6 +31,12 @@ const MyLearn = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchStudentCourses(); // Fetch notifications again
+    setRefreshing(false);
   };
 
   useEffect(() => {
@@ -80,6 +88,9 @@ const MyLearn = () => {
           data={courses}
           renderItem={renderCourseItem}
           keyExtractor={item => item.id.toString()}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
         />
       )}
     </View>

@@ -128,7 +128,7 @@ const Review = ({courseId, buttonState}) => {
 
   const handleAddReview = async () => {
     if (!newRating || !newComment.trim()) {
-      Alert.alert('Error', 'Please provide both a rating and a comment.');
+      errorToast('Please provide both a rating and a comment.');
       return;
     }
 

@@ -1,4 +1,4 @@
-import React, {useState, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -8,31 +8,34 @@ import {
   Dimensions,
   TouchableOpacity,
   ActivityIndicator,
-  Button,
 } from 'react-native';
 import {Video} from 'expo-av';
+import authService from '../services/authService';
 import sectionService from '../services/sectionService';
 import lessonService from '../services/lessonService';
-import lessonTrackerService from '../services/lessonTrackerService'; // Import the service for completing lessons
+import lessonTrackerService from '../services/lessonTrackerService';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {successToast} from '../utils/methods';
 
 const PlayCourse = ({route}) => {
-  const {courseId, username} = route.params; // Assuming username is passed via route params
+  const {courseId} = route.params;
   const [sections, setSections] = useState([]);
   const [selectedLesson, setSelectedLesson] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(null);
+
+  // Ref for ScrollView to scroll to the selected lesson
+  const scrollViewRef = useRef(null);
 
   const fetchSectionsAndLessons = async () => {
     try {
       setLoading(true);
 
-      // Gọi API lấy danh sách các section
       const sectionRequest = {courseId};
       const fetchedSections = await sectionService.getAllSectionByCourse(
         sectionRequest,
       );
 
-      // Gọi API lấy bài học đầu tiên chưa hoàn thành
       const firstUnlearnedLesson =
         await lessonTrackerService.getFirstUnlearnedLesson(courseId);
 
@@ -52,7 +55,6 @@ const PlayCourse = ({route}) => {
 
         setSections(sectionsWithLessons);
 
-        // Nếu API trả về lessonId, tìm bài học tương ứng
         if (firstUnlearnedLesson?.id) {
           const foundLesson = sectionsWithLessons
             .flatMap(section => section.lessons)
@@ -64,7 +66,6 @@ const PlayCourse = ({route}) => {
             sectionsWithLessons.length > 0 &&
             sectionsWithLessons[0].lessons.length > 0
           ) {
-            // Nếu không tìm thấy, lấy bài học đầu tiên
             setSelectedLesson(sectionsWithLessons[0].lessons[0]);
           }
         } else if (
@@ -84,6 +85,7 @@ const PlayCourse = ({route}) => {
   const completeAndNextLesson = async () => {
     if (!selectedLesson) return;
 
+    const username = user?.username;
     if (!selectedLesson.completed) {
       try {
         await lessonTrackerService.createCompleteLesson({
@@ -102,6 +104,7 @@ const PlayCourse = ({route}) => {
             ),
           })),
         );
+        successToast('Lesson completed successfully!');
       } catch (error) {
         console.error('Error completing lesson:', error);
         return;
@@ -120,13 +123,46 @@ const PlayCourse = ({route}) => {
     }
   };
 
+  const fetchUserByToken = async () => {
+    setLoading(true);
+    try {
+      const userData = await authService.getCurUser();
+      setUser(userData);
+    } catch (error) {
+      errorToast('An error occurred while fetching user data.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchSectionsAndLessons();
+    fetchUserByToken();
   }, [courseId]);
 
-  const LessonItem = ({lesson, onPress}) => (
+  useEffect(() => {
+    if (selectedLesson && scrollViewRef.current) {
+      // Scroll to the selected lesson when it's updated
+      const selectedLessonIndex = sections
+        .flatMap(section => section.lessons)
+        .findIndex(lesson => lesson.id === selectedLesson.id);
+
+      if (selectedLessonIndex >= 0 && scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({
+          y: selectedLessonIndex * 90, // Adjust the scroll position (60 is an approximation of row height)
+          animated: true,
+        });
+      }
+    }
+  }, [selectedLesson, sections]);
+
+  const LessonItem = ({lesson, onPress, isSelected}) => (
     <TouchableOpacity onPress={onPress}>
-      <View style={styles.lessonContainer}>
+      <View
+        style={[
+          styles.lessonContainer,
+          isSelected && styles.selectedLessonContainer, // Highlight selected lesson
+        ]}>
         <View style={styles.lessonTextContainer}>
           <Text style={styles.lessonTitle}>{lesson.title}</Text>
           <Text style={styles.lessonDuration}>
@@ -170,7 +206,11 @@ const PlayCourse = ({route}) => {
         </View>
       )}
 
-      <ScrollView style={styles.lessonList}>
+      <ScrollView
+        ref={scrollViewRef}
+        style={styles.lessonList}
+        scrollEventThrottle={16}
+        scrollIndicatorInsets={{right: 1}}>
         {sections.map(section => (
           <View key={section.id}>
             <Text style={styles.sectionTitle}>{section.title}</Text>
@@ -180,6 +220,7 @@ const PlayCourse = ({route}) => {
                 <LessonItem
                   lesson={item}
                   onPress={() => setSelectedLesson(item)}
+                  isSelected={selectedLesson?.id === item.id}
                 />
               )}
               keyExtractor={item => item.id.toString()}
@@ -200,6 +241,9 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  selectedLessonContainer: {
+    backgroundColor: '#e0f7fa', // Background color for selected lesson
   },
   fixedVideoContainer: {
     marginTop: 15,
