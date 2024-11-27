@@ -158,6 +158,9 @@ const Course = () => {
         </TouchableOpacity>
       </View>
       <FlatList
+        style={styles.scrollView}
+        scrollEventThrottle={16}
+        scrollIndicatorInsets={{right: 1}}
         data={filteredCourses}
         renderItem={({item}) => (
           <CourseItem
@@ -175,6 +178,8 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  scrollView: {
     padding: 10,
   },
   searchBarContainer: {

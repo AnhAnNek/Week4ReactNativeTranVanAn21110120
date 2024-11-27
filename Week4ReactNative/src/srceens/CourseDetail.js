@@ -234,6 +234,11 @@ const CourseDetail = ({route, navigation}) => {
     }
   };
 
+  const handleChatButtonPress = () => {
+    // Navigate to the chat screen or trigger chat functionality
+    navigation.navigate('ChatScreen'); // Change 'ChatScreen' to the actual screen name
+  };
+
   if (loading) {
     return <ActivityIndicator size="large" color="#0000ff" />;
   }
@@ -410,7 +415,11 @@ const CourseDetail = ({route, navigation}) => {
         {/* Reviews */}
         <Review courseId={course.id} buttonState={buttonState} />
       </ScrollView>
-
+      <TouchableOpacity
+        style={styles.chatButton}
+        onPress={handleChatButtonPress}>
+        <Icon name="chatbubble-ellipses-outline" size={30} color="#fff" />
+      </TouchableOpacity>
       {isFixed && (
         <Animated.View style={styles.fixedFooter}>
           <Text style={styles.price}>{course?.price?.price} đ</Text>
@@ -619,6 +628,21 @@ const styles = StyleSheet.create({
   courseDescriptionFull: {
     fontSize: 16,
     color: '#555',
+  },
+  chatButton: {
+    position: 'absolute',
+    bottom: 20,
+    right: 20,
+    backgroundColor: '#a855f7',
+    borderRadius: 50,
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 5, // for Android shadow
+    shadowColor: '#000', // for iOS shadow
+    shadowOffset: {width: 0, height: 2},
+    shadowOpacity: 0.2,
+    shadowRadius: 3.5,
   },
 });
 
