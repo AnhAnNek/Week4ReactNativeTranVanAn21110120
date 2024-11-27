@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
@@ -7,48 +7,57 @@ import {
   StyleSheet,
   Image,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
-
-// Dummy data
-const conversations = [
-  {
-    id: '1',
-    name: 'John Doe',
-    message: "Hey, how's it going?",
-    avatarUrl:
-      'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg',
-    timestamp: '10:30 AM',
-  },
-  {
-    id: '2',
-    name: 'Alice Smith',
-    message: 'Are you coming to the meeting?',
-    avatarUrl:
-      'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg',
-    timestamp: '09:15 AM',
-  },
-  {
-    id: '3',
-    name: 'Charlie Brown',
-    message: "Let's catch up soon!",
-    avatarUrl:
-      'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg',
-    timestamp: 'Yesterday',
-  },
-  {
-    id: '4',
-    name: 'Emily Davis',
-    message: 'Got your email, thanks!',
-    avatarUrl:
-      'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg',
-    timestamp: '2 days ago',
-  },
-];
+import messageService from '../services/messageService'; // Import the service file
+import websocketService from '../services/websocketService'; // Import WebSocket service
+import {getUsername} from '../utils/authUtils';
 
 const Message = ({navigation}) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredConversations, setFilteredConversations] =
-    useState(conversations);
+  const [conversations, setConversations] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [filteredConversations, setFilteredConversations] = useState([]);
+
+  // Fetch recent chats on component mount
+  const fetchRecentChats = async () => {
+    try {
+      setLoading(true);
+      const response = await messageService.getRecentChats(0, 10);
+      setConversations(response.content);
+      setFilteredConversations(response.content);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching recent chats:', error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchRecentChats();
+
+    // Connect to WebSocket
+    websocketService.disconnect();
+    websocketService.connect(() => {
+      websocketService.subscribe('/topic/recent-chats', newMessage => {
+        console.log('New message received:', newMessage);
+        // Update the conversation list dynamically
+        setConversations(prevConversations => [
+          newMessage,
+          ...prevConversations,
+        ]);
+        setFilteredConversations(prevConversations => [
+          newMessage,
+          ...prevConversations,
+        ]);
+      });
+    });
+
+    // Cleanup WebSocket connection
+    return () => {
+      websocketService.disconnect();
+    };
+  }, []);
 
   const handleSearch = query => {
     setSearchQuery(query);
@@ -57,32 +66,38 @@ const Message = ({navigation}) => {
     } else {
       const filtered = conversations.filter(
         conversation =>
-          conversation.name.toLowerCase().includes(query.toLowerCase()) ||
-          conversation.message.toLowerCase().includes(query.toLowerCase()),
+          conversation.fullName.toLowerCase().includes(query.toLowerCase()) ||
+          conversation.bio.toLowerCase().includes(query.toLowerCase()),
       );
       setFilteredConversations(filtered);
     }
   };
 
-  const navigateToDetail = () => {
-    // Navigate to message detail screen
-    navigation.navigate('MessageDetail');
+  const navigateToDetail = async item => {
+    const username = await getUsername();
+    navigation.navigate('MessageDetail', {
+      senderUsername: username || '',
+      recipientUsername: item.username || '',
+      recipientAvatar: item.avatarPath || '',
+      recipientFullName: item.fullName || '',
+    });
   };
 
   const renderItem = ({item}) => (
-    <TouchableOpacity style={styles.itemContainer} onPress={navigateToDetail}>
+    <TouchableOpacity
+      style={styles.itemContainer}
+      onPress={() => navigateToDetail(item)}>
       <Image
-        source={{uri: item.avatarUrl}}
+        source={{uri: item.avatarPath}}
         style={styles.avatar}
         resizeMode="cover"
       />
       <View style={styles.textContainer}>
-        <Text style={styles.name}>{item.name}</Text>
+        <Text style={styles.name}>{item.fullName}</Text>
         <Text style={styles.message} numberOfLines={1}>
-          {item.message}
+          {item.bio}
         </Text>
       </View>
-      <Text style={styles.timestamp}>{item.timestamp}</Text>
     </TouchableOpacity>
   );
 
@@ -95,12 +110,21 @@ const Message = ({navigation}) => {
           value={searchQuery}
           onChangeText={handleSearch}
         />
+        <TouchableOpacity
+          style={styles.reloadButton}
+          onPress={fetchRecentChats}>
+          <Text style={styles.reloadText}>Reload</Text>
+        </TouchableOpacity>
       </View>
-      <FlatList
-        data={filteredConversations}
-        keyExtractor={item => item.id}
-        renderItem={renderItem}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color="#0000ff" />
+      ) : (
+        <FlatList
+          data={filteredConversations}
+          keyExtractor={item => item.username}
+          renderItem={renderItem}
+        />
+      )}
     </View>
   );
 };
@@ -143,10 +167,6 @@ const styles = StyleSheet.create({
   message: {
     color: '#6c757d',
     fontSize: 14,
-  },
-  timestamp: {
-    fontSize: 12,
-    color: '#6c757d',
   },
 });
 

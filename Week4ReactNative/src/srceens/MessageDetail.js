@@ -1,4 +1,4 @@
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import {
   View,
   Text,
@@ -12,91 +12,148 @@ import {
   Keyboard,
   TouchableWithoutFeedback,
 } from 'react-native';
+import websocketService from '../services/websocketService';
+import messageService from '../services/messageService';
+import {formatDate} from '../utils/methods';
 
-const initialMessages = [
-  {text: 'Hey, how are you?', isSender: false, timestamp: '10:30 AM'},
-  {
-    text: "I'm good, thanks! What about you?",
-    isSender: true,
-    timestamp: '10:32 AM',
-  },
-  {text: 'Sure, just let me know when!', isSender: true, timestamp: '10:36 AM'},
-];
-
-const chatPartnerName = 'John Doe';
-const chatPartnerAvatar =
-  'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg';
-
-const MessageDetail = () => {
+const MessageDetail = ({route}) => {
+  const {
+    senderUsername,
+    recipientUsername,
+    recipientAvatar,
+    recipientFullName,
+  } = route.params;
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState(initialMessages);
-
+  const [messages, setMessages] = useState([]);
   const flatListRef = useRef(null);
 
   const keyboardVerticalOffset = Platform.OS === 'ios' ? 75 : 0;
 
-  const handleSendMessage = () => {
-    if (message.trim()) {
-      const newMessage = {
-        text: message,
-        isSender: true,
-        timestamp: new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-          hour12: true,
-        }),
-      };
+  // Track if WebSocket is already subscribed
+  const subscribed = useRef(false);
 
-      setMessages(prevMessages => {
-        const updatedMessages = [...prevMessages, newMessage];
-        setTimeout(
-          () => flatListRef.current.scrollToEnd({animated: true}),
-          100,
-        );
-        return updatedMessages;
-      });
-      setMessage('');
+  const fetchMessages = async () => {
+    try {
+      const response = await messageService.getAllMessages(
+        senderUsername,
+        recipientUsername,
+        0,
+        100,
+      );
+      setMessages(response.content || []);
+    } catch (error) {
+      console.error('Error fetching messages:', error);
     }
   };
 
-  const renderItem = ({item}) => (
-    <View
-      style={[
-        styles.messageContainer,
-        {alignSelf: item.isSender ? 'flex-end' : 'flex-start'},
-      ]}>
+  const handleSendMessage = () => {
+    if (message.trim()) {
+      const newMessage = {
+        type: 'TEXT',
+        content: message,
+        senderUsername: senderUsername || '',
+        recipientUsername: recipientUsername || '',
+      };
+      websocketService.send(`/app/messages`, newMessage);
+      setMessage('');
+
+      // Ensure flatListRef.current is not null before calling scrollToEnd
+      setTimeout(() => {
+        if (flatListRef.current) {
+          flatListRef.current.scrollToEnd({animated: true});
+        }
+      }, 100);
+    }
+  };
+
+  useEffect(() => {
+    fetchMessages();
+
+    if (!subscribed.current) {
+      websocketService.connect(() => {
+        websocketService.subscribe(
+          `/topic/messages/${senderUsername}`,
+          newMessage => {
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                ...newMessage,
+              },
+            ]);
+          },
+        );
+
+        websocketService.subscribe(
+          `/topic/messages/${recipientUsername}`,
+          newMessage => {
+            setMessages(prevMessages => [
+              ...prevMessages,
+              {
+                ...newMessage,
+              },
+            ]);
+          },
+        );
+        subscribed.current = true; // Set to true once subscribed
+      });
+    }
+
+    return () => {
+      // Disconnect WebSocket and reset subscription state
+      if (subscribed.current) {
+        websocketService.disconnect();
+        subscribed.current = false;
+      }
+    };
+  }, [senderUsername, recipientUsername]);
+
+  const renderItem = ({item}) => {
+    const isSender = item.senderUsername === senderUsername;
+    return (
       <View
         style={[
-          styles.messageBubble,
-          {backgroundColor: item.isSender ? '#cce4ff' : '#f2f2f2'},
+          styles.messageContainer,
+          {
+            alignSelf: isSender ? 'flex-end' : 'flex-start',
+          },
         ]}>
-        <Text style={styles.messageText}>{item.text}</Text>
-        <Text style={styles.timestamp}>{item.timestamp}</Text>
+        <View
+          style={[
+            styles.messageBubble,
+            {backgroundColor: isSender ? '#cce4ff' : '#f2f2f2'},
+          ]}>
+          <Text style={styles.messageText}>{item.content}</Text>
+          <Text style={styles.timestamp}>{formatDate(item.sendingTime)}</Text>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <KeyboardAvoidingView
-      behavior="padding"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       keyboardVerticalOffset={keyboardVerticalOffset}
       style={styles.container}>
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
         <View style={{flex: 1}}>
           <View style={styles.header}>
-            <Image source={{uri: chatPartnerAvatar}} style={styles.avatar} />
-            <Text style={styles.headerText}>{chatPartnerName}</Text>
+            <Image source={{uri: recipientAvatar}} style={styles.avatar} />
+            <Text style={styles.headerText}>{recipientFullName}</Text>
           </View>
           <FlatList
             ref={flatListRef}
             data={messages}
             renderItem={renderItem}
-            keyExtractor={(item, index) => index.toString()}
+            keyExtractor={(item, index) => index.toString()} // Ensure unique keys
             contentContainerStyle={styles.messagesList}
             keyboardShouldPersistTaps="handled"
-            style={{flexGrow: 1}}
+            onContentSizeChange={() => {
+              // Scroll to the end when content changes
+              if (flatListRef.current) {
+                flatListRef.current.scrollToEnd({animated: true});
+              }
+            }}
           />
-
           <View style={styles.inputContainer}>
             <TextInput
               style={styles.input}
@@ -162,7 +219,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     padding: 10,
-    //borderTopWidth: 1,
+    borderTopWidth: 1,
     borderTopColor: '#ddd',
     marginBottom: 10,
   },
