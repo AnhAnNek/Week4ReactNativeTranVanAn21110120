@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import DropDownPicker from 'react-native-dropdown-picker'; // Sử dụng DropDownPicker giống Profile
-import { Button, Snackbar } from 'react-native-paper';
-import { API_URL } from '../utils/constants';
-import { post } from '../utils/httpRequest';
+import {Button, Snackbar} from 'react-native-paper';
+import {API_URL} from '../utils/constants';
+import {post} from '../utils/httpRequest';
 
-function Register({ navigation }) {
+function Register({navigation}) {
   const [username, setUsername] = useState('vananne');
   const [password, setPassword] = useState('P@123456');
   const [fullName, setFullName] = useState('Van An');
@@ -29,9 +29,9 @@ function Register({ navigation }) {
   const [loading, setLoading] = useState(false); // Để hiển thị trạng thái tải
   const [open, setOpen] = useState(false);
   const [sexOptions, setSexOptions] = useState([
-    { label: 'Male', value: 'MALE' },
-    { label: 'Female', value: 'FEMALE' },
-    { label: 'Other', value: 'OTHER' },
+    {label: 'Male', value: 'MALE'},
+    {label: 'Female', value: 'FEMALE'},
+    {label: 'Other', value: 'OTHER'},
   ]);
 
   const handleRegister = async () => {
@@ -53,7 +53,7 @@ function Register({ navigation }) {
         const message = response.data;
         setSnackbarMessage(message);
 
-        navigation.navigate('InputOtpToActiveAccount', { username });
+        navigation.navigate('InputOtpToActiveAccount', {username});
       }
     } catch (error) {
       console.log(error?.message);
@@ -75,8 +75,6 @@ function Register({ navigation }) {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Register</Text>
-
       {/* Username */}
       <Text style={styles.label}>Username</Text>
       <TextInput
@@ -146,7 +144,9 @@ function Register({ navigation }) {
 
       {/* Date of Birth */}
       <Text style={styles.label}>Date of Birth</Text>
-      <TouchableOpacity onPress={() => setDobPickerVisible(true)} style={styles.input}>
+      <TouchableOpacity
+        onPress={() => setDobPickerVisible(true)}
+        style={styles.input}>
         <Text>{dob || 'Select Date'}</Text>
       </TouchableOpacity>
       {dobPickerVisible && (
@@ -160,16 +160,20 @@ function Register({ navigation }) {
       )}
 
       {/* Register Button */}
-      <TouchableOpacity style={styles.button} onPress={handleRegister} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Registering...' : 'Register'}</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleRegister}
+        disabled={loading}>
+        <Text style={styles.buttonText}>
+          {loading ? 'Registering...' : 'Register'}
+        </Text>
       </TouchableOpacity>
 
       {/* Snackbar for displaying messages */}
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-      >
+        duration={3000}>
         {snackbarMessage}
       </Snackbar>
     </ScrollView>
@@ -211,7 +215,7 @@ const styles = StyleSheet.create({
     borderColor: '#ccc',
   },
   button: {
-    backgroundColor: '#007bff',
+    backgroundColor: '#a855f7',
     padding: 15,
     borderRadius: 5,
     alignItems: 'center',

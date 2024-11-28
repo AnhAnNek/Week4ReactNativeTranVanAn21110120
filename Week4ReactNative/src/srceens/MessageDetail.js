@@ -120,7 +120,7 @@ const MessageDetail = ({route}) => {
         <View
           style={[
             styles.messageBubble,
-            {backgroundColor: isSender ? '#cce4ff' : '#f2f2f2'},
+            {backgroundColor: isSender ? '#f3e1ff' : '#f9f3fe'},
           ]}>
           <Text style={styles.messageText}>{item.content}</Text>
           <Text style={styles.timestamp}>{formatDate(item.sendingTime)}</Text>
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
   sendButton: {
     paddingVertical: 8,
     paddingHorizontal: 16,
-    backgroundColor: '#007bff',
+    backgroundColor: '#a855f7',
     borderRadius: 20,
   },
   sendButtonText: {

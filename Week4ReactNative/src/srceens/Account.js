@@ -47,7 +47,7 @@ const Account = ({navigation}) => {
   };
 
   const handleChangePassword = () => {
-    navigation.navigate('ChangePassword');
+    navigation.navigate('Change Password');
   };
 
   const handleCart = () => {

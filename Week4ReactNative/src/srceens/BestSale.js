@@ -129,7 +129,7 @@ const CourseList = ({navigation}) => {
       {/* Large Image Section for Featured or Recommended */}
       <ImageBackground
         source={{
-          uri: 'https://res.cloudinary.com/dnhvlncfw/image/upload/v1728881932/cld-sample-4.jpg',
+          uri: 'https://res.cloudinary.com/dq7y35u7s/image/upload/v1732733351/aaasss_wsx0cp.jpg',
         }}
         style={styles.bannerImage}
         imageStyle={styles.bannerImageStyle}></ImageBackground>

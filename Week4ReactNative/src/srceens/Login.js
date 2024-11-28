@@ -97,7 +97,7 @@ function Login({navigation}) {
         <Text style={styles.linkText}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => navigation.navigate('ForgetPassword')}>
+      <TouchableOpacity onPress={() => navigation.navigate('Forget Password')}>
         <Text style={styles.linkText}>Forget password</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
   button: {
     width: '90%',
     height: 50,
-    backgroundColor: '#00aaff',
+    backgroundColor: '#a855f7',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   linkText: {
-    color: '#00aaff',
+    color: '#a855f7',
     fontSize: 16,
     marginTop: 15,
   },

@@ -243,7 +243,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   selectedLessonContainer: {
-    backgroundColor: '#e0f7fa', // Background color for selected lesson
+    backgroundColor: '#e9d8fe', // Background color for selected lesson
   },
   fixedVideoContainer: {
     marginTop: 15,
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   nextButton: {
     paddingVertical: 5,
     paddingHorizontal: 20,
-    backgroundColor: '#007bff',
+    backgroundColor: '#a855f7',
     borderRadius: 5,
   },
   nextButtonText: {
