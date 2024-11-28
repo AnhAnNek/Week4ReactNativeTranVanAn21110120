@@ -113,11 +113,11 @@ const Cart = ({navigation}) => {
         paymentRequest,
       );
       const orderId = paymentResponse?.orderId;
-      
+
       const storedCoupons = await getCouponsFromStorage();
 
       const updatedCoupons = storedCoupons.filter(
-        coupon => coupon.code.toUpperCase() !== discountCode.toUpperCase(),
+        coupon => coupon.code.toUpperCase() !== selectedCoupon.toUpperCase(),
       );
       await AsyncStorage.setItem('coupons', JSON.stringify(updatedCoupons));
       successToast('Checkout successful! Redirecting to pending payment...');

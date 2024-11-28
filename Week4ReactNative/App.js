@@ -16,7 +16,7 @@ import Toast from 'react-native-toast-message';
 import Orders from './src/srceens/Orders';
 import PlayCourse from './src/srceens/PlayCourse';
 import MyLearning from './src/srceens/MyLearn';
-import ChangePassword from './src/srceens/ChangePassword';
+import ChangePassword from './src/srceens/ResetPassword';
 import {LogBox} from 'react-native';
 import Favourite from './src/srceens/Favourite';
 import History from './src/srceens/History';
@@ -26,6 +26,8 @@ import HistoryView from './src/srceens/HistoryView';
 import Coupon from './src/srceens/Coupon';
 import MessageDetail from './src/srceens/MessageDetail';
 import Notifications from './src/srceens/Notifications';
+import ForgotPassword from './src/srceens/ForgotPassword';
+import ResetPassword from './src/srceens/ResetPassword';
 const Stack = createStackNavigator();
 LogBox.ignoreAllLogs();
 
@@ -65,6 +67,8 @@ function App() {
         <Stack.Screen name="Coupon" component={Coupon} />
         <Stack.Screen name="Message Detail" component={MessageDetail} />
         <Stack.Screen name="Notifications" component={Notifications} />
+        <Stack.Screen name="Forget Password" component={ForgotPassword} />
+        <Stack.Screen name="Reset Password" component={ResetPassword} />
       </Stack.Navigator>
       <Toast />
     </NavigationContainer>

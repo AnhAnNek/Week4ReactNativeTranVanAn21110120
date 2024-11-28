@@ -279,7 +279,7 @@ const CourseDetail = ({route, navigation}) => {
             Instructor: {course.ownerUsername}
           </Text>
           <Text style={styles.instructor}>
-            Student: {course.countStudent || 5}
+            Student: {course.countStudent || 0}
           </Text>
           <Text style={styles.lastUpdated}>Last updated: 2024/08</Text>
           <Text style={styles.languages}>

@@ -35,6 +35,10 @@ const Account = ({navigation}) => {
     }
   };
 
+  useEffect(() => {
+    fetchUserByToken();
+  }, []);
+
   const userName = user?.username;
   const fullName = user?.fullName;
 
@@ -163,7 +167,7 @@ const Account = ({navigation}) => {
           <Text style={styles.optionText}>History View</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.optionItem}
           onPress={handleChangePassword}>
           <Ionicons
@@ -173,7 +177,7 @@ const Account = ({navigation}) => {
             style={styles.icon}
           />
           <Text style={styles.optionText}>Change Password</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
         <TouchableOpacity style={styles.optionItem} onPress={handleLogout}>
           <Ionicons
