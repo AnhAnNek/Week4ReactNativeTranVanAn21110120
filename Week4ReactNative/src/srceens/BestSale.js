@@ -69,6 +69,16 @@ const CourseCard = ({course, onPress}) => {
   );
 };
 
+// Function to shuffle an array randomly
+const shuffleArray = array => {
+  const shuffledArray = [...array];
+  for (let i = shuffledArray.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffledArray[i], shuffledArray[j]] = [shuffledArray[j], shuffledArray[i]];
+  }
+  return shuffledArray;
+};
+
 const CourseList = ({navigation}) => {
   const [bestSellerCourses, setBestSellerCourses] = useState([]);
   const [newCourses, setNewCourses] = useState([]);
@@ -90,6 +100,7 @@ const CourseList = ({navigation}) => {
         setBestSellerCourses(bestSellers);
         setNewCourses(newCoursesData);
         setHighRatedCourses(highRated);
+        setOldCourses(oldCoursesData);
       } catch (error) {
         console.error('Error fetching courses:', error.message);
         errorToast('Không thể tải danh sách khóa học');
@@ -113,7 +124,7 @@ const CourseList = ({navigation}) => {
     <View style={styles.courseSection}>
       <Text style={styles.sectionTitle}>{title}</Text>
       <FlatList
-        data={data}
+        data={shuffleArray(data)} // Shuffle the courses before rendering
         renderItem={({item}) => (
           <CourseCard course={item} onPress={() => goToCourseDetail(item)} />
         )}
@@ -138,6 +149,7 @@ const CourseList = ({navigation}) => {
       {renderCourseList('Recommended for you', bestSellerCourses)}
       {renderCourseList('Featured courses in IELTS', newCourses)}
       {renderCourseList('Top Rating', highRatedCourses)}
+      {renderCourseList('Old Courses', oldCourses)}
     </ScrollView>
   );
 };
