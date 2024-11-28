@@ -15,7 +15,7 @@ const CartItem = ({cartItem, handleRemoveFromCart}) => {
 
   const handleCoursePress = () => {
     // Navigate to CourseDetail screen with the course data
-    navigation.navigate('CourseDetail', {course: cartItem.course});
+    navigation.navigate('Course Detail', {course: cartItem.course});
   };
   const handleDelete = () => {
     // Show confirmation alert before removing the item

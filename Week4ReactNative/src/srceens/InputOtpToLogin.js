@@ -1,12 +1,20 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, View, Text, TextInput, TouchableOpacity, Alert } from 'react-native';
-import { API_URL } from '../utils/constants';
-import { post } from '../utils/httpRequest';
+import React, {useState} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import {API_URL} from '../utils/constants';
+import {post} from '../utils/httpRequest';
 import {saveToken, saveUsername} from '../utils/authUtils';
 import {errorToast, successToast} from '../utils/methods';
 
-const InputOtpToLogin = ({ route, navigation }) => {
-  const { username } = route.params;
+const InputOtpToLogin = ({route, navigation}) => {
+  const {username} = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -14,7 +22,7 @@ const InputOtpToLogin = ({ route, navigation }) => {
     if (otp.length === 6 && username.trim() !== '') {
       setLoading(true);
       try {
-        const loginWithOtpRequest = { username, otp };
+        const loginWithOtpRequest = {username, otp};
         const response = await post(
           `${API_URL}/auth/login-with-otp`,
           loginWithOtpRequest,
@@ -57,7 +65,10 @@ const InputOtpToLogin = ({ route, navigation }) => {
         maxLength={6}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleOtpSubmit} disabled={loading}>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleOtpSubmit}
+        disabled={loading}>
         <Text style={styles.buttonText}>
           {loading ? 'Verifying...' : 'Verify OTP'}
         </Text>
@@ -97,7 +108,7 @@ const styles = StyleSheet.create({
   button: {
     width: '90%',
     height: 50,
-    backgroundColor: '#00aaff',
+    backgroundColor: '#a855f7',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,

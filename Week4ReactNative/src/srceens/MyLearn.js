@@ -70,7 +70,7 @@ const MyLearn = () => {
           </Text>
           <TouchableOpacity
             onPress={() =>
-              navigation.navigate('PlayCourse', {courseId: item.id})
+              navigation.navigate('Play Course', {courseId: item.id})
             }>
             <Text style={styles.startCourse}>{buttonText}</Text>
           </TouchableOpacity>

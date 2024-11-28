@@ -1,11 +1,19 @@
-import React, { useState } from 'react';
-import { SafeAreaView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
-import { API_URL } from '../utils/constants';
-import { put } from '../utils/httpRequest';
+import React, {useState} from 'react';
+import {
+  SafeAreaView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+  Alert,
+} from 'react-native';
+import {API_URL} from '../utils/constants';
+import {put} from '../utils/httpRequest';
 import {errorToast, successToast} from '../utils/methods';
 
-const InputOtpToActiveAccount = ({ route, navigation }) => {
-  const { username } = route.params;
+const InputOtpToActiveAccount = ({route, navigation}) => {
+  const {username} = route.params;
   const [otp, setOtp] = useState('');
   const [loading, setLoading] = useState(false);
 
@@ -17,8 +25,11 @@ const InputOtpToActiveAccount = ({ route, navigation }) => {
 
     setLoading(true);
     try {
-      const activeAccountRequest = { username, otp };
-      const response = await put(`${API_URL}/auth/active-account`, activeAccountRequest);
+      const activeAccountRequest = {username, otp};
+      const response = await put(
+        `${API_URL}/auth/active-account`,
+        activeAccountRequest,
+      );
 
       if (response.status === 200) {
         successToast('Account activated successfully!');
@@ -36,7 +47,9 @@ const InputOtpToActiveAccount = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.formContainer}>
       <Text style={styles.title}>Enter OTP to Activate Account</Text>
-      <Text style={styles.subtitle}>Please enter the OTP sent to your email</Text>
+      <Text style={styles.subtitle}>
+        Please enter the OTP sent to your email
+      </Text>
 
       <TextInput
         style={styles.input}
@@ -47,8 +60,13 @@ const InputOtpToActiveAccount = ({ route, navigation }) => {
         maxLength={6}
       />
 
-      <TouchableOpacity style={styles.button} onPress={handleSubmit} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Activating...' : 'Submit OTP'}</Text>
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleSubmit}
+        disabled={loading}>
+        <Text style={styles.buttonText}>
+          {loading ? 'Activating...' : 'Submit OTP'}
+        </Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -85,7 +103,7 @@ const styles = StyleSheet.create({
   button: {
     width: '90%',
     height: 50,
-    backgroundColor: '#00aaff',
+    backgroundColor: '#a855f7',
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: 5,

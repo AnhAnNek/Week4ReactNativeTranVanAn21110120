@@ -98,7 +98,7 @@ const Notifications = () => {
     if (match && match[1]) {
       const orderId = match[1]; // Get the orderId from the regex match
       // Navigate to OrderDetail screen with orderId
-      navigation.navigate('OrderDetail', {orderId});
+      navigation.navigate('Order Detail', {orderId});
     } else {
       errorToast('Order ID not found in message');
     }

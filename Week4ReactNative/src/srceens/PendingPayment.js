@@ -1,43 +1,46 @@
-import React, { useEffect, useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   View,
   Text,
   Button,
   ActivityIndicator,
   StyleSheet,
+  Image,
 } from 'react-native';
-import { errorToast, successToast } from "../utils/methods";
+import {errorToast, successToast} from '../utils/methods';
 import paymentService from '../services/paymentService';
 
-const PendingPayment = ({ navigation, route }) => {
-  const { orderId } = route.params;  // Extract order ID from route params
+const PendingPayment = ({navigation, route}) => {
+  const {orderId} = route.params;
   const [loading, setLoading] = useState(false);
-  const [paymentStatus, setPaymentStatus] = useState('PENDING');  // Initial status is PENDING
+  const [paymentStatus, setPaymentStatus] = useState('PENDING');
 
-  // Function to simulate payment success on button press
   const handleSimulatePayment = async () => {
-    setLoading(true);  // Show loader while simulating payment
+    setLoading(true);
     try {
-      const paymentResponse = await paymentService.simulatePaymentSuccess(orderId);
+      const paymentResponse = await paymentService.simulatePaymentSuccess(
+        orderId,
+      );
       const status = paymentResponse?.status;
       if (status === 'SUCCESS') {
         setPaymentStatus('SUCCESS');
         successToast('Payment simulated successfully');
-        navigation.navigate('History');  // Navigate to History after successful payment
+        setTimeout(() => {
+          navigation.navigate('My Learn');
+        }, 5000);
       } else if (status === 'FAILED') {
         setPaymentStatus('FAILED');
         errorToast('Payment failed');
       }
     } catch (error) {
       console.error(error?.message);
-      setPaymentStatus('FAILED');  // Assume failed if there's an error
+      setPaymentStatus('FAILED');
       errorToast('Error simulating payment');
     } finally {
-      setLoading(false);  // Hide loader after the process
+      setLoading(false);
     }
   };
 
-  // Determine the color for the payment status dynamically
   const getStatusColor = () => {
     switch (paymentStatus) {
       case 'SUCCESS':
@@ -58,16 +61,20 @@ const PendingPayment = ({ navigation, route }) => {
       ) : (
         <View style={styles.content}>
           <Text style={styles.heading}>Pending Payment</Text>
-
-          {/* Display the Order ID */}
+          {paymentStatus === 'SUCCESS' && (
+            <Image
+              source={{
+                uri: 'https://res.cloudinary.com/dq7y35u7s/image/upload/v1732725606/azk2yjngkjzkulzyrm1n.png',
+              }}
+              style={styles.image}
+            />
+          )}
           <Text style={styles.orderIdText}>Order ID: {orderId}</Text>
 
-          {/* Display the Payment Status */}
-          <Text style={[styles.statusText, { color: getStatusColor() }]}>
+          <Text style={[styles.statusText, {color: getStatusColor()}]}>
             Payment Status: {paymentStatus}
           </Text>
 
-          {/* Button to simulate payment success */}
           {paymentStatus === 'PENDING' && (
             <Button
               title="Simulate Payment Success"
@@ -85,7 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: '#F5F5F5',  // Light gray background
+    backgroundColor: '#F5F5F5',
     justifyContent: 'center',
   },
   loader: {
@@ -94,14 +101,14 @@ const styles = StyleSheet.create({
     height: 200,
   },
   content: {
-    backgroundColor: '#fff',  // White card background
+    backgroundColor: '#fff',
     padding: 20,
     borderRadius: 10,
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: {width: 0, height: 2},
     shadowRadius: 4,
-    elevation: 3,  // For Android shadow
+    elevation: 3,
     alignItems: 'center',
   },
   heading: {
@@ -121,6 +128,11 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
+  },
+  image: {
+    width: 200,
+    height: 150,
+    marginBottom: 20,
   },
 });
 

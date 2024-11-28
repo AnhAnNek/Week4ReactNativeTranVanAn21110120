@@ -34,7 +34,7 @@ const OrderDetail = ({route}) => {
 
   const handleCoursePress = course => {
     // Navigate to the CourseDetail screen and pass the course data
-    navigation.navigate('CourseDetail', {course});
+    navigation.navigate('Course Detail', {course});
   };
 
   if (loading) {

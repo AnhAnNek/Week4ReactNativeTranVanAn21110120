@@ -8,6 +8,7 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import messageService from '../services/messageService'; // Import the service file
 import websocketService from '../services/websocketService'; // Import WebSocket service
@@ -18,6 +19,7 @@ const Message = ({navigation}) => {
   const [conversations, setConversations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filteredConversations, setFilteredConversations] = useState([]);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Fetch recent chats on component mount
   const fetchRecentChats = async () => {
@@ -75,12 +77,18 @@ const Message = ({navigation}) => {
 
   const navigateToDetail = async item => {
     const username = await getUsername();
-    navigation.navigate('MessageDetail', {
+    navigation.navigate('Message Detail', {
       senderUsername: username || '',
       recipientUsername: item.username || '',
       recipientAvatar: item.avatarPath || '',
       recipientFullName: item.fullName || '',
     });
+  };
+
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchRecentChats();
+    setRefreshing(false);
   };
 
   const renderItem = ({item}) => (
@@ -110,16 +118,19 @@ const Message = ({navigation}) => {
           value={searchQuery}
           onChangeText={handleSearch}
         />
-        <TouchableOpacity
+        {/* <TouchableOpacity
           style={styles.reloadButton}
           onPress={fetchRecentChats}>
           <Text style={styles.reloadText}>Reload</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       {loading ? (
         <ActivityIndicator size="large" color="#0000ff" />
       ) : (
         <FlatList
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
           data={filteredConversations}
           keyExtractor={item => item.username}
           renderItem={renderItem}
