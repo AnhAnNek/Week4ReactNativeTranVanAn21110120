@@ -71,46 +71,69 @@ const CourseItem = ({course, onPress}) => {
 };
 
 const Course = () => {
-  const [courses, setCourses] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const navigation = useNavigation(); // Sử dụng navigation
+  const [courses, setCourses] = useState([]); // All loaded courses
+  const [loading, setLoading] = useState(true); // Initial loading indicator
+  const [searchQuery, setSearchQuery] = useState(''); // Search query
+  const [pageNumber, setPageNumber] = useState(0); // Current page for lazy loading
+  const [isFetchingMore, setIsFetchingMore] = useState(false); // Prevent duplicate fetches
+  const navigation = useNavigation();
 
-  const fetchCourses = async () => {
+  // Function to fetch courses
+  const fetchCourses = async (page = 0, reset = false) => {
     try {
       const courseRequest = {
-        pageNumber: 0,
-        size: 5,
+        pageNumber: page, // Current page
+        size: 5, // Fetch 5 courses per request
         title: searchQuery || null,
       };
+
       const fetchedCourses = await courseService.getCourse(courseRequest);
-      setCourses(fetchedCourses || []);
+
+      if (reset) {
+        // Reset course list on new search
+        setCourses(fetchedCourses || []);
+      } else {
+        // Append new courses for lazy loading
+        setCourses(prevCourses => [...prevCourses, ...(fetchedCourses || [])]);
+      }
     } catch (error) {
-      console.error('Lỗi khi lấy danh sách khóa học:', error);
+      console.error('Error fetching courses:', error);
     } finally {
-      setLoading(false);
+      setLoading(false); // Stop initial loader
+      setIsFetchingMore(false); // Allow further lazy loading
     }
   };
 
+  // Fetch courses on initial render or when search query changes
   useEffect(() => {
-    fetchCourses();
-  }, []);
+    setLoading(true); // Show loader
+    setPageNumber(0); // Reset page number for new search
+    fetchCourses(0, true); // Fetch the first page and reset the list
+  }, [searchQuery]);
 
-  const filteredCourses = courses.filter(course =>
-    course.title.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-
-  const goToCourseDetail = course => {
-    saveCourseToHistory(course);
-    navigation.navigate('Course Detail', {course});
+  // Handle lazy loading when reaching the end of the list
+  const loadMoreCourses = () => {
+    if (!isFetchingMore) {
+      setIsFetchingMore(true); // Prevent duplicate requests
+      const nextPage = pageNumber + 1; // Increment page number
+      setPageNumber(nextPage); // Update state
+      fetchCourses(nextPage); // Fetch the next page
+    }
   };
 
+  // Navigate to course detail screen and save course to history
+  const goToCourseDetail = course => {
+    saveCourseToHistory(course); // Save to history
+    navigation.navigate('Course Detail', {course}); // Navigate
+  };
+
+  // Save course to AsyncStorage history
   const saveCourseToHistory = async course => {
     try {
       const history = await AsyncStorage.getItem('courseHistory');
       const historyArray = history ? JSON.parse(history) : [];
 
-      // Kiểm tra xem khóa học đã tồn tại trong lịch sử chưa
+      // Check if course is already in history
       const isAlreadySaved = historyArray.some(item => item.id === course.id);
       if (!isAlreadySaved) {
         historyArray.push(course);
@@ -120,11 +143,12 @@ const Course = () => {
         );
       }
     } catch (error) {
-      console.error('Lỗi khi lưu khóa học vào lịch sử:', error);
+      console.error('Error saving course to history:', error);
     }
   };
 
-  if (loading) {
+  // Show loader while fetching initial courses
+  if (loading && pageNumber === 0) {
     return (
       <View style={styles.loaderContainer}>
         <ActivityIndicator size="large" color="#0000ff" />
@@ -132,13 +156,15 @@ const Course = () => {
     );
   }
 
+  // Render component
   return (
     <View style={styles.container}>
+      {/* Search bar */}
       <View style={styles.searchBarContainer}>
         <IconR name="search-outline" size={20} color="#000" />
         <TextInput
           style={styles.searchBar}
-          placeholder="Tìm kiếm khóa học..."
+          placeholder="Search courses..."
           placeholderTextColor="#ccc"
           value={searchQuery}
           onChangeText={setSearchQuery}
@@ -147,18 +173,22 @@ const Course = () => {
           <IconR name="filter-outline" size={20} color="#000" />
         </TouchableOpacity>
       </View>
+
+      {/* Course list */}
       <FlatList
         style={styles.scrollView}
         scrollEventThrottle={16}
         scrollIndicatorInsets={{right: 1}}
-        data={filteredCourses}
+        data={courses}
         renderItem={({item}) => (
-          <CourseItem
-            course={item}
-            onPress={() => goToCourseDetail(item)} // Truyền hàm goToCourseDetail
-          />
+          <CourseItem course={item} onPress={() => goToCourseDetail(item)} />
         )}
         keyExtractor={item => item.id.toString()}
+        onEndReached={loadMoreCourses} // Trigger lazy loading
+        onEndReachedThreshold={0.5} // Load more when 50% from the end
+        ListFooterComponent={
+          isFetchingMore && <ActivityIndicator size="small" color="#0000ff" />
+        }
       />
     </View>
   );
